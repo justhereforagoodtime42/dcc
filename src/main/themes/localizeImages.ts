@@ -123,53 +123,116 @@ function pickWallpaperUrls(css: string, localByRemote: Map<string, string>): str
     return preferred.slice(0, 1);
 }
 
+/** True for ClearVision-style themes that paint via --background-image + shading */
+function isCssVariableWallpaperTheme(css: string) {
+    return /--background-image\s*:/.test(css) || /--theme-background-image\s*:/.test(css) || /--background-shading/.test(css);
+}
+
 /**
- * Discord renames hashed classes often. Expand old .app__XXXX background
+ * Only widen .app__XXXX rules that actually set a wallpaper url(...).
+ * Blindly expanding every .app__ rule (e.g. ClearVision shading) onto [class*="bg_"]
+ * wipes the wallpaper with a solid/shading shorthand.
+ */
+function expandLegacyAppWallpaperRules(css: string): string {
+    return css.replace(
+        /(#app-mount\s+)?\.app__[a-zA-Z0-9]+\s*\{([^{}]*url\(\s*['"]?(?:https?:|vencord:)[^)]+\)[^{}]*)\}/gi,
+        (_full, _mount, body: string) =>
+            `.app__160d8, #app-mount, body, [class*="app_"], [class*="bg_"], [class*="appMount_"] {${body}}`
+    );
+}
+
+/**
+ * Discord renames hashed classes often. Expand old .app__XXXX wallpaper
  * rules and force wallpaper + translucent chrome so it shows in servers.
+ *
+ * Important: never set background-image:none on bg_/app roots — that is where
+ * Visual Refresh paints the wallpaper in guilds (NewRem only clears color).
  */
 function expandBackgroundSelectors(css: string, wallpaperUrls: string[]): string {
     if (!wallpaperUrls.length) return css;
 
-    // Widen legacy app root selectors used by older BD themes
-    let out = css.replace(
-        /#app-mount\s+\.app__[a-zA-Z0-9]+\s*\{/g,
-        '#app-mount, body, .app__160d8, [class*="app_"], [class*="bg_"], [class*="appMount_"] {'
-    );
-    out = out.replace(
-        /\.app__[a-zA-Z0-9]+\s*\{/g,
-        '.app__160d8, #app-mount, body, [class*="app_"], [class*="bg_"], [class*="appMount_"] {'
-    );
+    const variableTheme = isCssVariableWallpaperTheme(css);
+    let out = expandLegacyAppWallpaperRules(css);
 
     const urlsCss = wallpaperUrls
         .map(u => `  background-image: url(${u}) !important;`)
         .join("\n");
 
+    // Keep CSS variables pointing at the cached wallpaper (ClearVision / NAAT)
+    const primary = wallpaperUrls[0];
     out += `
 
-/* Nexora: force theme wallpaper onto current Discord roots */
+/* Nexora: keep variable-based themes pointed at the cached wallpaper */
+:root {
+  --background-image: url(${primary}) !important;
+  --theme-background-image: url(${primary}) !important;
+  --user-popout-image: url(${primary}) !important;
+  --user-modal-image: url(${primary}) !important;
+}
+`;
+
+    out += `
+/* Nexora: force theme wallpaper onto current Discord roots (match NewRem) */
+.app__160d8,
 #app-mount,
 body,
 [class*="appMount_"],
 [class*="bg_"],
-[class*="app_"][class*="base_"],
 .visual-refresh [class*="bg_"] {
 ${urlsCss}
   background-size: cover !important;
   background-position: center center !important;
   background-attachment: fixed !important;
-  background-color: transparent !important;
   background-repeat: no-repeat !important;
 }
+`;
 
-/* Nexora: punch through opaque Discord chrome so wallpaper shows in servers */
-[class*="layers_"],
-[class*="layer_"],
-[class*="base_"],
+    // ClearVision sets .bg__ to z-index:-1 which can disappear under opaque chrome
+    if (variableTheme) {
+        out += `
+/* Nexora: ClearVision / variable themes — unbury wallpaper layer */
 .visual-refresh [class*="bg_"],
+[class*="bg_"] {
+  z-index: 0 !important;
+  filter: none !important;
+  background-color: transparent !important;
+}
+html, body, [class*="appMount_"] {
+  background-color: transparent !important;
+}
+/* Soft shading only — do not cover the wallpaper solid */
+[class*="app_"][class*="base_"],
+.app__160d8 {
+  background-color: transparent !important;
+}
+`;
+    } else {
+        out += `
+/* non-variable themes: clear solid fill on wallpaper roots */
+.app__160d8,
+#app-mount,
+body,
+[class*="app_"],
+[class*="bg_"],
+[class*="appMount_"] {
+  background-color: transparent !important;
+}
+`;
+    }
+
+    out += `
+/* Color-only punch-through — keep wallpaper on bg_/app roots */
+[class*="layers_"],
+[class*="layer_"] {
+  background-color: transparent !important;
+}
+
 .visual-refresh [class*="sidebar_"],
 .visual-refresh [class*="guilds_"],
-.visual-refresh [class*="panels_"],
 .visual-refresh [class*="wrapper_"][class*="guilds"],
+.visual-refresh [class*="scroller_"][class*="guild"],
+.theme-dark [class*="scroller_"][class*="guild"],
+.visual-refresh [class*="guildSeparator_"],
 #app-mount [class*="chat_"],
 #app-mount [class*="chatContent_"],
 #app-mount [class*="content_"][class*="chat"],
@@ -179,18 +242,24 @@ ${urlsCss}
 .theme-dark [class*="container_"][class*="chat"],
 .theme-dark [class*="scroller_"][class*="sidebar"],
 .visual-refresh [class*="messages_"],
-.visual-refresh [class*="messagesWrapper_"] {
+.visual-refresh [class*="messagesWrapper_"],
+.visual-refresh [class*="container_"][class*="themed"] {
+  background: transparent !important;
   background-color: transparent !important;
-  background-image: none !important;
 }
 
 /* Keep panels readable but not fully opaque */
 #app-mount [class*="panels_"],
+.visual-refresh [class*="panels_"],
 .visual-refresh [class*="channelTextArea_"],
 .visual-refresh [class*="form_"] {
   background-color: rgba(0, 0, 0, 0.35) !important;
 }
+`;
 
+    // Discord design-token wipe helps Rem/Akame-style themes; ClearVision needs its shading vars
+    if (!variableTheme) {
+        out += `
 /* Soften modern design tokens that paint solid over the wallpaper */
 .theme-dark, .theme-light, .visual-refresh {
   --background-primary: transparent !important;
@@ -208,6 +277,16 @@ ${urlsCss}
   --bg-overlay-app-frame: transparent !important;
 }
 `;
+    } else {
+        out += `
+/* ClearVision-style: keep their shading vars, only clear Discord overlays */
+.theme-dark, .theme-light, .visual-refresh {
+  --bg-overlay-chat: transparent !important;
+  --bg-overlay-app-frame: transparent !important;
+  --background-shading-percent: 40% !important;
+}
+`;
+    }
 
     return out;
 }

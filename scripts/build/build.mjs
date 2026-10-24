@@ -218,3 +218,17 @@ const buildConfigs = ([
 ]);
 
 await buildOrWatchAll(buildConfigs);
+
+// Ship Nexora default themes (+ wallpaper cache) next to the main process bundles
+{
+    const { cpSync, existsSync, mkdirSync } = await import("fs");
+    const defaultsSrc = resolve("src/main/themes/defaults");
+    if (existsSync(defaultsSrc)) {
+        for (const outDir of ["dist/themes/defaults"]) {
+            const dest = resolve(outDir);
+            mkdirSync(dest, { recursive: true });
+            cpSync(defaultsSrc, dest, { recursive: true });
+            console.log("Copied default themes →", outDir);
+        }
+    }
+}

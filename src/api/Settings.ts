@@ -99,7 +99,8 @@ const DefaultSettings: Settings = {
     useQuickCss: true,
     themeLinks: [],
     eagerPatches: false, // Eagerly patching no longer works due to module factories with the same id being able to have different sources now.
-    enabledThemes: [],
+    // New installs get New Rem; other bundled themes still appear under Local Themes
+    enabledThemes: ["NewRemTheme.theme.css"],
     enableReactDevtools: false,
     frameless: false,
     transparent: false,
