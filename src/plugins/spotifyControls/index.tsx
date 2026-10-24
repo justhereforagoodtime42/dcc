@@ -41,6 +41,18 @@ export const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Restart currently playing track when pressing the previous button if playtime is >3s",
         default: true
+    },
+    noSpotifyAutoPause: {
+        type: OptionType.BOOLEAN,
+        description: "Disable Spotify auto-pause when joining voice chat",
+        default: true,
+        restartNeeded: true
+    },
+    keepSpotifyActivityOnIdle: {
+        type: OptionType.BOOLEAN,
+        description: "Keep Spotify activity showing when Discord is idle",
+        default: false,
+        restartNeeded: true
     }
 });
 
@@ -50,9 +62,9 @@ function toggleHoverControls(value: boolean) {
 
 export default definePlugin({
     name: "SpotifyControls",
-    description: "Adds a Spotify player above the account panel",
+    description: "Adds a Spotify player above the account panel, with optional no auto-pause in voice",
     tags: ["Media", "Activity"],
-    authors: [Devs.Ven, Devs.afn, Devs.KraXen72, Devs.Av32000, Devs.nin0dev],
+    authors: [Devs.Ven, Devs.afn, Devs.KraXen72, Devs.Av32000, Devs.nin0dev, Devs.Cyn, Devs.Nuckyz],
     settings,
     patches: [
         {
@@ -89,6 +101,22 @@ export default definePlugin({
                 {
                     match: /(?<=artists.filter\(\i=>).{0,10}\i\.id\)&&/,
                     replace: ""
+                }
+            ]
+        },
+        // From former SpotifyCrack: no auto-pause + optional idle activity
+        {
+            find: "}getPlayableComputerDevices(){",
+            replacement: [
+                {
+                    predicate: () => settings.store.noSpotifyAutoPause,
+                    match: /(?<=function \i\(\){)(?=.{0,200}SPOTIFY_AUTO_PAUSED\))/,
+                    replace: "return;"
+                },
+                {
+                    predicate: () => settings.store.keepSpotifyActivityOnIdle,
+                    match: /(shouldShowActivity\(\){.{0,50})&&!\i\.\i\.isIdle\(\)/,
+                    replace: "$1"
                 }
             ]
         },

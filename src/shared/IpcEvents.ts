@@ -30,6 +30,8 @@ export const enum IpcEvents {
     GET_THEMES_LIST = "VencordGetThemesList",
     GET_THEME_DATA = "VencordGetThemeData",
     GET_THEME_SYSTEM_VALUES = "VencordGetThemeSystemValues",
+    SAVE_THEME = "VencordSaveTheme",
+    DELETE_THEME = "VencordDeleteTheme",
     THEME_UPDATE = "VencordThemeUpdate",
 
     OPEN_EXTERNAL = "VencordOpenExternal",

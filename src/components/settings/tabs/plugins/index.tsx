@@ -40,6 +40,7 @@ import { PluginTag, PluginTags } from "@utils/types";
 import { Button, lodash, React, SearchableSelect, Select, TextInput, Tooltip, useMemo, useRef, useState } from "@webpack/common";
 import { JSX } from "react";
 
+import { RECOMMENDED_PLUGIN_IDS } from "../../../../nexoraPlugins/_shared/nexoraShared";
 import Plugins, { ExcludedPlugins, PluginMeta } from "~plugins";
 
 import { PluginCard } from "./PluginCard";
@@ -215,6 +216,9 @@ function PluginSettings() {
 
     const plugins = [] as JSX.Element[];
     const requiredPlugins = [] as JSX.Element[];
+    const recommendedByName = new Map<string, JSX.Element>();
+    const recommendedSet = new Set<string>(RECOMMENDED_PLUGIN_IDS as readonly string[]);
+    const showRecommendedSection = !search.length && searchValue.status === SearchStatus.ALL && !searchValue.tags.length;
 
     const showApi = searchValue.status === SearchStatus.API_PLUGINS;
     for (const p of sortedPlugins) {
@@ -224,14 +228,11 @@ function PluginSettings() {
         if (!pluginFilter(p)) continue;
 
         const isRequired = p.required || p.isDependency || depMap[p.name]?.some(d => settings.plugins[d].enabled);
-
-        if (isRequired) {
-            const tooltipText = p.required || !depMap[p.name]
-                ? "This plugin is required for Vencord to function."
-                : makeDependencyList(depMap[p.name]?.filter(d => settings.plugins[d].enabled));
-
-            requiredPlugins.push(
-                <Tooltip text={tooltipText} key={p.name}>
+        const card = isRequired
+            ? (
+                <Tooltip text={p.required || !depMap[p.name]
+                    ? "This plugin is required for Nexora to function."
+                    : makeDependencyList(depMap[p.name]?.filter(d => settings.plugins[d].enabled))} key={p.name}>
                     {({ onMouseLeave, onMouseEnter }) => (
                         <PluginCard
                             onMouseLeave={onMouseLeave}
@@ -243,9 +244,8 @@ function PluginSettings() {
                         />
                     )}
                 </Tooltip>
-            );
-        } else {
-            plugins.push(
+            )
+            : (
                 <PluginCard
                     onRestartNeeded={(name, key) => changes.handleChange(`${name}.${key}`)}
                     disabled={false}
@@ -254,14 +254,40 @@ function PluginSettings() {
                     key={p.name}
                 />
             );
+
+        if (isRequired) {
+            requiredPlugins.push(card);
+        } else if (showRecommendedSection && recommendedSet.has(p.name)) {
+            recommendedByName.set(p.name, card);
+        } else {
+            plugins.push(card);
         }
     }
+
+    const recommendedPlugins = RECOMMENDED_PLUGIN_IDS
+        .map(id => recommendedByName.get(id))
+        .filter(isTruthy);
 
     return (
         <SettingsTab>
             <ReloadRequiredCard required={changes.hasChanges} />
 
             <UIElementsButton />
+
+            {showRecommendedSection && recommendedPlugins.length > 0 && (
+                <>
+                    <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
+                        Recommended Plugins
+                    </HeadingTertiary>
+                    <Paragraph className={Margins.bottom8}>
+                        Featured features at the top. Toggle any of them on or off — the full catalog is below.
+                    </Paragraph>
+                    <div className={cl("grid")}>
+                        {recommendedPlugins}
+                    </div>
+                    <Divider className={Margins.top20} />
+                </>
+            )}
 
             <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
                 Filters

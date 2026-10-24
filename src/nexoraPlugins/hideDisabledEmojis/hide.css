@@ -1,0 +1,7 @@
+/* Hide nitro lock chrome / empty locked sections in the emoji picker */
+[class*="emojiLockIconContainer"],
+[class*="categorySectionNitroLocked"],
+[class*="nitroTopDivider"],
+[class*="upsellContainer_"] {
+    display: none !important;
+}

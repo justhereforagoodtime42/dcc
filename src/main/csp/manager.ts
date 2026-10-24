@@ -75,14 +75,24 @@ async function addCspRule(_: IpcMainInvokeEvent, url: string, directives: string
 
     const domain = new URL(url).host;
 
+    // Already allowed — still let the user confirm so they can restart
     if (domain in NativeSettings.store.customCspRules) {
-        return "conflict";
+        const { response } = await dialog.showMessageBox({
+            type: "info",
+            title: "Nexora Host Permissions",
+            message: `${domain} is already allowed`,
+            detail: `Fully close and restart ${IS_DISCORD_DESKTOP ? "Discord" : "Vesktop"} for theme images/styles from this host to load.`,
+            buttons: ["Cancel", "OK"],
+            defaultId: 1,
+            cancelId: 0,
+        });
+        return response === 1 ? "ok" : "cancelled";
     }
 
     const { checkboxChecked, response } = await dialog.showMessageBox({
-        ...getMessage(url, directives, callerName),
-        type: callerName ? "info" : "warning",
-        title: "Vencord Host Permissions",
+        ...getMessage(url, directives, callerName || "Nexora Themes"),
+        type: "warning",
+        title: "Nexora Host Permissions",
         buttons: ["Cancel", "Allow"],
         defaultId: 0,
         cancelId: 0,

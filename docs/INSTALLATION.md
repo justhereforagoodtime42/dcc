@@ -89,5 +89,5 @@ pnpm test
 ## Security notes
 
 - Never enter Discord passwords or tokens into Nexora tools.
-- Review [SECURITY.md](../SECURITY.md) and [ARCHITECTURE.md](./ARCHITECTURE.md) for ToS and distribution risks.
 - Themes are CSS only; do not install “themes” that include executable code.
+- Using client modifications may violate Discord’s Terms of Service.

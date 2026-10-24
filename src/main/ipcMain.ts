@@ -24,7 +24,7 @@ import { debounce } from "@shared/debounce";
 import { IpcEvents } from "@shared/IpcEvents";
 import { BrowserWindow, ipcMain, nativeTheme, shell, systemPreferences } from "electron";
 import monacoHtml from "file://monacoWin.html?minify&base64";
-import { FSWatcher, mkdirSync, readFileSync, watch, writeFileSync } from "fs";
+import { FSWatcher, mkdirSync, readFileSync, unlinkSync, watch, writeFileSync } from "fs";
 import { open, readdir, readFile } from "fs/promises";
 import { release } from "os";
 import { join } from "path";
@@ -102,6 +102,25 @@ ipcMain.handle(IpcEvents.GET_THEME_SYSTEM_VALUES, () => {
     return {
         "os-accent-color": accentColor
     };
+});
+
+ipcMain.handle(IpcEvents.SAVE_THEME, (_, fileName: string, fileData: string) => {
+    if (!fileName.endsWith(".css") || fileName.includes("/") || fileName.includes("\\") || fileName.includes("..")) {
+        throw new Error("Invalid theme file name");
+    }
+    const safePath = ensureSafePath(THEMES_DIR, fileName);
+    if (!safePath) throw new Error(`Unsafe path ${fileName}`);
+    writeFileSync(safePath, fileData, "utf-8");
+});
+
+ipcMain.handle(IpcEvents.DELETE_THEME, (_, fileName: string) => {
+    const safePath = ensureSafePath(THEMES_DIR, fileName);
+    if (!safePath) throw new Error(`Unsafe path ${fileName}`);
+    try {
+        unlinkSync(safePath);
+    } catch {
+        // already gone
+    }
 });
 
 ipcMain.handle(IpcEvents.OPEN_THEMES_FOLDER, () => shell.openPath(THEMES_DIR));

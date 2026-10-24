@@ -16,14 +16,37 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { existsSync, renameSync } from "fs";
 import { app } from "electron";
 import { join } from "path";
 
-export const DATA_DIR = process.env.VENCORD_USER_DATA_DIR ?? (
-    process.env.DISCORD_USER_DATA_DIR
-        ? join(process.env.DISCORD_USER_DATA_DIR, "..", "VencordData")
-        : join(app.getPath("userData"), "..", "Vencord")
-);
+function resolveDataDir() {
+    if (process.env.NEXORA_USER_DATA_DIR || process.env.VENCORD_USER_DATA_DIR) {
+        return process.env.NEXORA_USER_DATA_DIR || process.env.VENCORD_USER_DATA_DIR!;
+    }
+
+    if (process.env.DISCORD_USER_DATA_DIR) {
+        return join(process.env.DISCORD_USER_DATA_DIR, "..", "NexoraData");
+    }
+
+    const parent = join(app.getPath("userData"), "..");
+    const nexora = join(parent, "Nexora");
+    const legacy = join(parent, "Vencord");
+
+    // One-time migrate %AppData%/Vencord → %AppData%/Nexora so themes/settings keep working
+    try {
+        if (!existsSync(nexora) && existsSync(legacy)) {
+            renameSync(legacy, nexora);
+            console.info("[Nexora] Migrated data folder Vencord → Nexora");
+        }
+    } catch (err) {
+        console.error("[Nexora] Failed to migrate data folder; using Nexora path", err);
+    }
+
+    return nexora;
+}
+
+export const DATA_DIR = resolveDataDir();
 export const SETTINGS_DIR = join(DATA_DIR, "settings");
 export const THEMES_DIR = join(DATA_DIR, "themes");
 export const QUICK_CSS_PATH = join(SETTINGS_DIR, "quickCss.css");

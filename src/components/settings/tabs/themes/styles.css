@@ -4,6 +4,98 @@
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
 
+.nx-bd-theme-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.nx-bd-theme-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.nx-bd-theme-thumb-wrap {
+    aspect-ratio: 16 / 10;
+    background: var(--background-secondary);
+    overflow: hidden;
+}
+
+.nx-bd-theme-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.nx-bd-theme-thumb-empty {
+    background: linear-gradient(135deg, var(--background-secondary), var(--background-tertiary));
+}
+
+.nx-bd-theme-thumb-builtin {
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+    background:
+        radial-gradient(ellipse at 20% 0%, rgba(91, 141, 239, 0.35), transparent 55%),
+        linear-gradient(160deg, #0e1014, #1c2330 60%, #12151b);
+    color: #e8eefc;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.nx-bd-theme-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.nx-bd-theme-author {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.nx-bd-theme-desc {
+    font-size: 13px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--text-default);
+}
+
+.nx-bd-theme-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.nx-bd-theme-tag {
+    border: none;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    background: var(--background-modifier-accent);
+    color: var(--text-muted);
+}
+
+.nx-bd-theme-tag:hover {
+    color: var(--text-default);
+    background: var(--background-modifier-hover);
+}
+
+.nx-bd-theme-meta {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
 .vc-settings-csp-list {
     display: flex;
     flex-direction: column;

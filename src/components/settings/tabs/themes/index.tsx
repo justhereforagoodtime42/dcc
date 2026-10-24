@@ -26,43 +26,14 @@ import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { getStylusWebStoreUrl } from "@utils/web";
-import { Forms, React, TabBar, useState } from "@webpack/common";
+import { Forms, React } from "@webpack/common";
 
 import { CspErrorCard } from "./CspErrorCard";
 import { LocalThemesTab } from "./LocalThemesTab";
-import { OnlineThemesTab } from "./OnlineThemesTab";
-
-const enum ThemeTab {
-    LOCAL,
-    ONLINE
-}
 
 function ThemesTab() {
-    const [currentTab, setCurrentTab] = useState(ThemeTab.LOCAL);
-
     return (
         <SettingsTab>
-            <TabBar
-                type="top"
-                look="brand"
-                className="vc-settings-tab-bar"
-                selectedItem={currentTab}
-                onItemSelect={setCurrentTab}
-            >
-                <TabBar.Item
-                    className="vc-settings-tab-bar-item"
-                    id={ThemeTab.LOCAL}
-                >
-                    Local Themes
-                </TabBar.Item>
-                <TabBar.Item
-                    className="vc-settings-tab-bar-item"
-                    id={ThemeTab.ONLINE}
-                >
-                    Online Themes
-                </TabBar.Item>
-            </TabBar>
-
             <Flex flexDirection="column" gap="1em">
                 <CspErrorCard />
 
@@ -74,8 +45,7 @@ function ThemesTab() {
                     </Paragraph>
                 </Card>
 
-                {currentTab === ThemeTab.LOCAL && <LocalThemesTab />}
-                {currentTab === ThemeTab.ONLINE && <OnlineThemesTab />}
+                <LocalThemesTab />
             </Flex>
         </SettingsTab>
     );

@@ -12,7 +12,7 @@ import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { promptToRestart } from "@utils/promptToRestart";
 import { useForceUpdater } from "@utils/react";
-import { Button, Forms } from "@webpack/common";
+import { Button, Forms, showToast } from "@webpack/common";
 
 export function CspErrorCard() {
     if (IS_WEB) return null;
@@ -27,13 +27,26 @@ export function CspErrorCard() {
     const allowUrl = async (url: string) => {
         const { origin: baseUrl, host } = new URL(url);
 
-        const result = await VencordNative.csp.requestAddOverride(baseUrl, ["connect-src", "img-src", "style-src", "font-src"], "Vencord Themes");
-        if (result !== "ok") return;
+        const result = await VencordNative.csp.requestAddOverride(
+            baseUrl,
+            ["connect-src", "img-src", "style-src", "font-src"],
+            "Nexora Themes"
+        );
 
-        CspBlockedUrls.forEach(url => {
-            if (new URL(url).host === host) {
-                CspBlockedUrls.delete(url);
-            }
+        if (result === "cancelled") return;
+        if (result === "unchecked") {
+            showToast({ text: "You must check the trust box to allow this host", variant: "critical" });
+            return;
+        }
+        if (result === "invalid") {
+            showToast({ text: "Could not allow that URL", variant: "critical" });
+            return;
+        }
+        // "ok" or already-allowed path — clear matching blocks and restart
+        CspBlockedUrls.forEach(blocked => {
+            try {
+                if (new URL(blocked).host === host) CspBlockedUrls.delete(blocked);
+            } catch { /* ignore */ }
         });
 
         forceUpdate();
@@ -45,10 +58,14 @@ export function CspErrorCard() {
     return (
         <ErrorCard>
             <Forms.FormTitle tag="h5">Blocked Resources</Forms.FormTitle>
-            <Forms.FormText>Some images, styles, or fonts were blocked because they come from disallowed domains.</Forms.FormText>
-            <Forms.FormText>It is highly recommended to move them to GitHub or Imgur. But you may also allow domains if you fully trust them.</Forms.FormText>
             <Forms.FormText>
-                After allowing a domain, you have to fully close (from tray / task manager) and restart {IS_DISCORD_DESKTOP ? "Discord" : "Vesktop"} to apply the change.
+                Some images, styles, or fonts were blocked because they come from disallowed domains.
+            </Forms.FormText>
+            <Forms.FormText>
+                Click <strong>Allow</strong> if you trust the host (needed for theme background JPGs, etc.), then fully restart Discord.
+            </Forms.FormText>
+            <Forms.FormText>
+                After allowing a domain, fully close Discord (tray / task manager) and reopen for the change to apply.
             </Forms.FormText>
 
             <Forms.FormTitle tag="h5" className={classes(Margins.top16, Margins.bottom8)}>Blocked URLs</Forms.FormTitle>

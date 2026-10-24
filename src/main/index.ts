@@ -19,18 +19,20 @@
 import "./ipcMain";
 
 import { app, net, protocol } from "electron";
+import { readFileSync } from "fs";
 import { join } from "path";
 import { pathToFileURL } from "url";
 
 import { initCsp } from "./csp";
 import { RendererSettings } from "./settings";
+import { localizeThemeCssImages } from "./themes/localizeImages";
 import { IS_VANILLA, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
 import { installExt } from "./utils/extensions";
 
 if (IS_VESKTOP || !IS_VANILLA) {
     app.whenReady().then(() => {
-        protocol.handle("vencord", ({ url: unsafeUrl }) => {
+        protocol.handle("vencord", async ({ url: unsafeUrl }) => {
             let url = decodeURI(unsafeUrl).slice("vencord://".length).replace(/\?v=\d+$/, "");
 
             if (url.endsWith("/")) url = url.slice(0, -1);
@@ -43,6 +45,19 @@ if (IS_VESKTOP || !IS_VANILLA) {
                     return new Response(null, {
                         status: 404
                     });
+                }
+
+                // Localize remote background images in CSS so CSP cannot block them
+                if (theme.endsWith(".css") && !theme.includes(".image-cache/")) {
+                    try {
+                        const raw = readFileSync(safeUrl, "utf-8");
+                        const localized = await localizeThemeCssImages(raw);
+                        return new Response(localized, {
+                            headers: { "Content-Type": "text/css; charset=utf-8" }
+                        });
+                    } catch (err) {
+                        console.error("[Nexora] Failed to serve localized theme", theme, err);
+                    }
                 }
 
                 return net.fetch(pathToFileURL(safeUrl).toString());

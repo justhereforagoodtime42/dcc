@@ -131,9 +131,9 @@ if (!IS_VANILLA) {
         s.set("DANGEROUS_ENABLE_DEVTOOLS_ONLY_ENABLE_IF_YOU_KNOW_WHAT_YOURE_DOING", true);
     });
 
-    process.env.DATA_DIR = join(app.getPath("userData"), "..", "Vencord");
+    process.env.DATA_DIR = join(app.getPath("userData"), "..", "Nexora");
 } else {
-    console.log("[Vencord] Running in vanilla mode. Not loading Vencord");
+    console.log("[Nexora] Running in vanilla mode. Not loading Nexora");
 }
 
 console.log("[Vencord] Loading original Discord app.asar");

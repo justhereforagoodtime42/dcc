@@ -42,6 +42,9 @@ export const CspPolicies: PolicyMap = {
     "i.ibb.co": ImageSrc, // ImgBB, used by some themes
     "i.pinimg.com": ImageSrc, // Pinterest, used by some themes
     "files.catbox.moe": ImageAndCssSrc, // Catbox, used by some themes
+    // Wallpaper hosts used by many BetterDiscord themes (backup; primary path caches images locally)
+    "*.alphacoders.com": ImageSrc,
+    "images8.alphacoders.com": ImageSrc,
 
     "cdn.discordapp.com": ImageAndCssSrc, // Discord CDN, used by Vencord and some themes to load media
     "media.discordapp.net": ImageSrc, // Discord media CDN, possible alternative to Discord CDN
@@ -52,7 +55,9 @@ export const CspPolicies: PolicyMap = {
     "cdn.jsdelivr.net": ImageScriptsAndCssSrc,
 
     // Function Specific
-    "api.github.com": ConnectSrc, // used for updating Vencord itself
+    "api.github.com": ConnectSrc, // used for updating Nexora itself
+    "api.betterdiscord.app": ConnectSrc, // BetterDiscord theme store API
+    "betterdiscord.app": ImageSrc, // BetterDiscord theme thumbnails
     "ws.audioscrobbler.com": ConnectSrc, // Last.fm API
     "musicbrainz.org": ConnectSrc,
     "*.listenbrainz.org": ConnectSrc,

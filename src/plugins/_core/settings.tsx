@@ -17,8 +17,8 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
-import { BackupRestoreIcon, CloudIcon, InfoIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
-import { BackupAndRestoreTab, CloudTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab, VencordTab } from "@components/settings/tabs";
+import { BackupRestoreIcon, MainSettingsIcon, PaintbrushIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
+import { BackupAndRestoreTab, PluginsTab, ThemesTab, UpdaterTab, VencordTab } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
 import { isTruthy } from "@utils/guards";
 import definePlugin, { IconProps, OptionType } from "@utils/types";
@@ -26,12 +26,6 @@ import { waitFor } from "@webpack";
 import { React } from "@webpack/common";
 import type { ComponentType, PropsWithChildren, ReactNode } from "react";
 
-import AboutTab from "../../nexoraPlugins/_settingsTabs/AboutTab";
-import ImportExportTab from "../../nexoraPlugins/_settingsTabs/ImportExportTab";
-import PluginCreatorTab from "../../nexoraPlugins/_settingsTabs/PluginCreatorTab";
-import PluginStoreTab from "../../nexoraPlugins/_settingsTabs/PluginStoreTab";
-import ThemeEditorTab from "../../nexoraPlugins/_settingsTabs/ThemeEditorTab";
-import UpdatesTab from "../../nexoraPlugins/_settingsTabs/UpdatesTab";
 import gitHash from "~git-hash";
 
 let LayoutTypes = {
@@ -189,28 +183,10 @@ export default definePlugin({
                 Icon: PluginsIcon
             }),
             buildEntry({
-                key: "nexora_plugin_store",
-                title: "Plugin Store",
-                Component: PluginStoreTab,
-                Icon: PluginsIcon
-            }),
-            buildEntry({
                 key: "nexora_themes",
                 title: "Themes",
                 Component: ThemesTab,
                 Icon: PaintbrushIcon
-            }),
-            buildEntry({
-                key: "nexora_theme_editor",
-                title: "Theme Editor",
-                Component: ThemeEditorTab,
-                Icon: PaintbrushIcon
-            }),
-            buildEntry({
-                key: "nexora_plugin_creator",
-                title: "Plugin Creator",
-                Component: PluginCreatorTab,
-                Icon: PatchHelperIcon
             }),
             !IS_UPDATER_DISABLED && UpdaterTab && buildEntry({
                 key: "nexora_updater",
@@ -220,42 +196,10 @@ export default definePlugin({
                 Icon: UpdaterIcon
             }),
             buildEntry({
-                key: "nexora_updates",
-                title: "Updates",
-                Component: UpdatesTab,
-                Icon: UpdaterIcon
-            }),
-            buildEntry({
-                key: "nexora_cloud",
-                title: "Cloud",
-                panelTitle: "Cloud Sync",
-                Component: CloudTab,
-                Icon: CloudIcon
-            }),
-            buildEntry({
                 key: "nexora_backup_restore",
                 title: "Backup & Restore",
                 Component: BackupAndRestoreTab,
                 Icon: BackupRestoreIcon
-            }),
-            buildEntry({
-                key: "nexora_import_export",
-                title: "Import / Export",
-                Component: ImportExportTab,
-                Icon: BackupRestoreIcon
-            }),
-            !IS_STANDALONE && PatchHelperTab && buildEntry({
-                key: "nexora_patch_helper",
-                title: "Patch Helper",
-                Component: PatchHelperTab,
-                Icon: PatchHelperIcon
-            }),
-            buildEntry({
-                key: "nexora_about",
-                title: "About",
-                panelTitle: "About & Diagnostics",
-                Component: AboutTab,
-                Icon: InfoIcon
             }),
             ...this.customEntries.map(buildEntry),
             // TODO: Remove deprecated customSections in a future update
