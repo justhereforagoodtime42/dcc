@@ -2,7 +2,38 @@
 
 Nexora customizes an **existing** Discord desktop install. It does not replace Discord’s login or chat servers.
 
-## Prerequisites
+## Easy install (Windows — friends / end users)
+
+No Node, git, or pnpm needed.
+
+1. Install [Discord desktop](https://discord.com/download) (Stable) and open it once.
+2. Fully quit Discord (system tray too).
+3. Open the latest release: https://github.com/justhereforagoodtime42/dcc/releases/tag/nexora-latest  
+4. Download **Install-Nexora.bat** (or **Nexora-Windows.zip** and run the `.bat` inside).
+5. Double-click **Install-Nexora.bat** and follow the prompts.
+6. Open Discord — Nexora settings and bundled themes should be available.
+
+### PowerShell one-liner
+
+```powershell
+irm https://github.com/justhereforagoodtime42/dcc/releases/download/nexora-latest/Install-Nexora.ps1 | iex
+```
+
+### Uninstall
+
+Download **Uninstall-Nexora.ps1** from the same release, or:
+
+```powershell
+irm https://github.com/justhereforagoodtime42/dcc/releases/download/nexora-latest/Uninstall-Nexora.ps1 | iex
+```
+
+After Discord updates, run the installer again.
+
+---
+
+## Developer install (from source)
+
+### Prerequisites
 
 - [git](https://git-scm.com/)
 - [Node.js](https://nodejs.org/) **≥ 22**
