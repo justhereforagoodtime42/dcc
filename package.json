@@ -1,18 +1,21 @@
 {
-    "name": "vencord",
+    "name": "nexora",
     "private": "true",
-    "version": "1.15.13",
-    "description": "The cutest Discord client mod",
-    "homepage": "https://github.com/Vendicated/Vencord#readme",
+    "version": "0.1.0",
+    "description": "Nexora — open-source Discord desktop client customization (Vencord-based fork)",
+    "homepage": "https://github.com/justhereforagoodtime42/dcc#readme",
     "bugs": {
-        "url": "https://github.com/Vendicated/Vencord/issues"
+        "url": "https://github.com/justhereforagoodtime42/dcc/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Vendicated/Vencord.git"
+        "url": "git+https://github.com/justhereforagoodtime42/dcc.git"
     },
     "license": "GPL-3.0-or-later",
-    "author": "Vendicated",
+    "author": "Nexora contributors",
+    "contributors": [
+        "Vendicated and contributors (Vencord upstream)"
+    ],
     "scripts": {
         "build": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/build.mjs",
         "buildStandalone": "pnpm build --standalone",
@@ -25,8 +28,10 @@
         "watchWeb": "pnpm buildWeb --watch",
         "generatePluginJson": "tsx scripts/generatePluginList.ts",
         "generateTypes": "tspc --emitDeclarationOnly --declaration --outDir packages/vencord-types --allowJs false",
-        "inject": "node scripts/runInstaller.mjs -- --install",
-        "uninject": "node scripts/runInstaller.mjs -- --uninstall",
+        "inject": "node scripts/runInstaller.mjs -- -install",
+        "uninject": "node scripts/runInstaller.mjs -- -uninstall",
+        "inject:stable": "node scripts/runInstaller.mjs -- -install -branch stable",
+        "uninject:stable": "node scripts/runInstaller.mjs -- -uninstall -branch stable",
         "lint": "eslint",
         "lint-styles": "stylelint \"src/**/*.css\" --ignore-pattern src/userplugins",
         "lint:fix": "pnpm lint --fix",

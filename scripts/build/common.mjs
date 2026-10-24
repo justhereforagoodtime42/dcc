@@ -145,7 +145,8 @@ export const globPlugins = kind => ({
         });
 
         build.onLoad({ filter, namespace: "import-plugins" }, async () => {
-            const pluginDirs = ["plugins/_api", "plugins/_core", "plugins", "userplugins"];
+            // nexoraPlugins: Nexora-specific official plugins (kept separate from upstream for merges)
+            const pluginDirs = ["plugins/_api", "plugins/_core", "plugins", "nexoraPlugins", "userplugins"];
             let code = "";
             let pluginsCode = "\n";
             let metaCode = "\n";
