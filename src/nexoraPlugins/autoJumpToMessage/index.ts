@@ -8,7 +8,7 @@ import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { MessageActions, NavigationRouter, showToast } from "@webpack/common";
 
-import { NexoraAuthors } from "../_shared/nexoraShared";
+const Authors = [{ name: "Nexora", id: 0n }] as const;
 
 migratePluginSettings("AutoJumpToMessage", "NexoraAutoJumpToMessage");
 
@@ -63,7 +63,7 @@ function onClick(e: MouseEvent) {
 export default definePlugin({
     name: "AutoJumpToMessage",
     description: "Jump to referenced Discord message links; handles missing/inaccessible targets",
-    authors: [...NexoraAuthors],
+    authors: [...Authors],
     tags: ["Utility"],
     enabledByDefault: true,
     settings,

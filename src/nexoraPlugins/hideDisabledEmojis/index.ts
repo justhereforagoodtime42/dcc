@@ -10,7 +10,6 @@ import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 
-import { AcidicReturns } from "../_shared/nexoraShared";
 import hideStyle from "./hide.css?managed";
 
 const logger = new Logger("HideDisabledEmojis");
@@ -25,7 +24,7 @@ let originalIsEmojiFiltered: ((...args: any[]) => boolean) | undefined;
 export default definePlugin({
     name: "HideDisabledEmojis",
     description: "Hides disabled / locked emojis from the emoji picker (useful without Nitro)",
-    authors: [Zerebos, AcidicReturns],
+    authors: [Zerebos],
     tags: ["Utility", "Chat"],
     enabledByDefault: true,
 

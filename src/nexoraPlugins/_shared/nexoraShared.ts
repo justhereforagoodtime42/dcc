@@ -14,7 +14,6 @@ export const NEXORA_VERSION = "0.1.0";
 
 /** Built-in + host plugins pinned at the top of the Plugins tab as “Recommended”. */
 export const RECOMMENDED_PLUGIN_IDS = [
-    // Nexora-built
     "Declutter",
     "SplitLargeMessages",
     "DownloadAllAttachments",
@@ -22,7 +21,6 @@ export const RECOMMENDED_PLUGIN_IDS = [
     "PermissionSearch",
     "HideDisabledEmojis",
     "SpotifyControls",
-    // Host features users asked for (already in the client mod)
     "AlwaysTrust",
     "AnonymiseFileNames",
     "SilentTyping",

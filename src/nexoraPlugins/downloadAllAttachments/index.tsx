@@ -9,7 +9,7 @@ import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { Menu, React, showToast } from "@webpack/common";
 
-import { NexoraAuthors } from "../_shared/nexoraShared";
+const Authors = [{ name: "Nexora", id: 0n }] as const;
 
 migratePluginSettings("DownloadAllAttachments", "NexoraDownloadAllAttachments");
 
@@ -87,7 +87,7 @@ const messageCtx: NavContextMenuPatchCallback = (children, { message }: { messag
 export default definePlugin({
     name: "DownloadAllAttachments",
     description: "Context action to download/open all attachments on a message (no auto-execute)",
-    authors: [...NexoraAuthors],
+    authors: [...Authors],
     tags: ["Utility"],
     enabledByDefault: true,
     settings,

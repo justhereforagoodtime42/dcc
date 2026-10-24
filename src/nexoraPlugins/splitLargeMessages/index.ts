@@ -8,7 +8,8 @@ import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { MessageActions, showToast, UserStore } from "@webpack/common";
 
-import { NexoraAuthors } from "../_shared/nexoraShared";
+/** Concept from BetterDiscord SplitLargeMessages (DevilBro); Nexora port */
+const Authors = [{ name: "DevilBro", id: 0n }, { name: "Nexora", id: 0n }] as const;
 
 migratePluginSettings("SplitLargeMessages", "NexoraSplitLargeMessages");
 
@@ -58,7 +59,7 @@ function sleep(ms: number) {
 export default definePlugin({
     name: "SplitLargeMessages",
     description: "Split long outgoing messages into chunks with optional confirmation",
-    authors: [...NexoraAuthors],
+    authors: [...Authors],
     tags: ["Chat"],
     enabledByDefault: true,
     settings,

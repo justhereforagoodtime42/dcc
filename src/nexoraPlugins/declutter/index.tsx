@@ -7,8 +7,9 @@
 import { definePluginSettings, migratePluginSettings, SettingsStore } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 
-import { NexoraAuthors } from "../_shared/nexoraShared";
 import managedStyle from "./style.css?managed";
+
+const Authors = [{ name: "Nexora", id: 0n }] as const;
 
 migratePluginSettings("Declutter", "NexoraDeclutter");
 
@@ -46,7 +47,7 @@ function applyClasses() {
 export default definePlugin({
     name: "Declutter",
     description: "Hide or densify supported Discord UI chrome via CSS (restorable)",
-    authors: [...NexoraAuthors],
+    authors: [...Authors],
     tags: ["Appearance"],
     enabledByDefault: true,
     settings,
