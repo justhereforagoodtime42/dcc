@@ -6,16 +6,17 @@ Nexora is **not** a standalone chat app, a new Electron messaging client, or an 
 
 This repository is a **fork of [Vencord](https://github.com/Vendicated/Vencord)** with Nexora-specific plugins, documentation, and branding. See [NOTICE](./NOTICE) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
-## Status (Stage 1)
+## Status
 
-Working toward:
+Working today:
 
-- Vencord-based build and inject/uninject workflow
-- Nexora documentation and architecture decision record
-- Nexora identity settings panel inside Discord
-- Separated `src/nexoraPlugins/` tree for Nexora features
+- Vencord-based build + `pnpm nexora:install` / status / uninstall (conflict-aware)
+- Nexora settings hub (Plugin Manager, Store, Theme Editor, Creator, Updates, About)
+- Built-in nexoraPlugins: Declutter, Split Large Messages, Download All Attachments, Auto Jump, Theme Editor, Plugin Creator
+- Host plugin map (Silent Typing, Message Logger, ClearURLs, …) without double-patching
+- Local plugin registry + GitHub issue templates + Nexora CI
 
-Not complete yet: Nexora-branded installer UX, full built-in plugin suite, theme studio, plugin store, plugin creator, community registry automation.
+Still evolving: remote registry integrity/rollback, branded Go installer, deeper built-in coverage.
 
 ## Requirements
 

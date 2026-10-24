@@ -1,0 +1,21 @@
+name: Report a Security Vulnerability
+description: Prefer private advisories; use this only if advisories are unavailable
+title: "[Security]: "
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Prefer GitHub Security Advisories when available. Do not post exploit details publicly if the issue is unfixed.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction (redact secrets)
+    validations:
+      required: true

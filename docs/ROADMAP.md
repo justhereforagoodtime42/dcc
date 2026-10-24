@@ -1,12 +1,17 @@
 # Nexora Roadmap
 
-1. **Repository and architecture** — fork bootstrap, docs, identity (Stage 1)
-2. **Minimal working customization** — verified inject/uninject, Nexora settings surface
-3. **Plugin foundation** — built-in nexoraPlugins with real host APIs
-4. **Appearance** — visual Theme Editor + import/export
-5. **Plugin development** — Plugin Creator / templates
-6. **Marketplace** — registry, install/update/rollback
-7. **Community** — GitHub submissions and review workflows
-8. **Hardening** — CI, audits, supported-version declarations, releases
+1. **Repository and architecture** — done (Stage 1)
+2. **Installer UX / conflicts** — done baseline (`pnpm nexora:*`)
+3. **Built-in plugins** — done baseline (Declutter, Split, Download All, Auto Jump + host plugin map)
+4. **Theme Editor** — done baseline (`.theme.json` → CSS)
+5. **Plugin Creator** — done baseline (templates in hub)
+6. **Marketplace** — done baseline (local registry + store UI); remote update/rollback next
+7. **Community** — done baseline (GitHub issue templates)
+8. **Hardening** — done baseline (Nexora CI workflow, SUPPORTED_VERSIONS.md)
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for technical constraints and policy risks.
+## Next priorities
+
+- Remote registry with integrity checks and rollback
+- Nexora-branded Go installer fork (Equilotl-style) with richer conflict UI
+- Per-plugin automated Discord compatibility probes
+- Theme preset gallery and shareable `.theme.json` catalog

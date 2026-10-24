@@ -1,6 +1,12 @@
 # Community Submissions (planned)
 
-Status: **scaffolding only in Stage 1**. Initial process will use GitHub Issues, Pull Requests, and Releases on [justhereforagoodtime42/dcc](https://github.com/justhereforagoodtime42/dcc).
+Status: **GitHub-backed baseline**. Use Issues / PRs / Releases on [justhereforagoodtime42/dcc](https://github.com/justhereforagoodtime42/dcc).
+
+Issue templates:
+
+- Feature: `.github/ISSUE_TEMPLATE/feature_request_nexora.yml`
+- Plugin submission: `.github/ISSUE_TEMPLATE/plugin_submission.yml`
+- Security: `.github/ISSUE_TEMPLATE/security.yml` (prefer private advisories)
 
 ## Intended actions
 

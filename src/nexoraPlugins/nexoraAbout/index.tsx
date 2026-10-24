@@ -10,20 +10,22 @@ import SettingsPlugin from "@plugins/_core/settings";
 import { removeFromArray } from "@utils/misc";
 import definePlugin from "@utils/types";
 
-import AboutPage from "./AboutPage";
+import { NexoraAuthors } from "../_shared/nexoraShared";
+import NexoraHub from "./NexoraHub";
 
 export default definePlugin({
     name: "NexoraAbout",
-    description: "Adds the Nexora About & Diagnostics entry to Discord settings",
-    authors: [{ name: "Nexora", id: 0n }],
+    description: "Nexora settings hub: plugins, store, themes, creator, updates, diagnostics",
+    authors: [...NexoraAuthors],
+    tags: ["Customisation"],
     required: true,
 
     start() {
         SettingsPlugin.customEntries.push({
             key: "nexora_about",
             title: "Nexora",
-            panelTitle: "Nexora — About & Diagnostics",
-            Component: AboutPage,
+            panelTitle: "Nexora",
+            Component: NexoraHub,
             Icon: InfoIcon
         });
     },

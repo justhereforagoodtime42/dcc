@@ -1,0 +1,26 @@
+name: Nexora CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm testTsc
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexora-dist
+          path: dist/
+          if-no-files-found: error

@@ -1,0 +1,41 @@
+name: Submit a Plugin
+description: Propose a community plugin for the Nexora registry
+title: "[Plugin]: "
+labels: ["plugin-submission"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Plugin summary
+      description: What problem does it solve?
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source repository or PR link
+    validations:
+      required: true
+  - type: textarea
+    id: metadata
+    attributes:
+      label: Metadata
+      description: ID, version, license, compatibility, dependencies, permissions
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Privacy / security implications
+      description: Network access, message access, token handling (must be none), etc.
+    validations:
+      required: true
+  - type: checkboxes
+    id: affirm
+    attributes:
+      label: Affirmations
+      options:
+        - label: Source is GPL-compatible and includes tests/docs where feasible
+          required: true
+        - label: I understand official status is never automatic
+          required: true

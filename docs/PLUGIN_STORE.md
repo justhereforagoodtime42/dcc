@@ -1,15 +1,18 @@
-# Plugin Store (planned)
+# Plugin Store
 
-Status: **not implemented in Stage 1**.
+Status: **Stage 6 baseline implemented**.
 
-Planned capabilities:
+## What works
 
-- Featured / official / community / installed / updates
-- Search and category filters
-- Compatibility, authors, licenses, source links, release notes
-- Install, enable/disable, update, uninstall
-- Integrity checks (hash/signature), permission change review, rollback
-- Manual update check; option to disable automatic updates
-- Offline: keep installed plugin settings; show registry errors clearly
+- In-client **Plugin Store** tab under Settings → Nexora
+- Official catalog from `registry/plugins.json` (mirrored in `src/nexoraPlugins/_registry/registryData.ts`)
+- Search filter, metadata (license, category, source, permissions)
+- Plugin Manager tab toggles Nexora plugins and recommended host (Vencord) plugins without double-patching
 
-The store will integrate with the host plugin loader; it will not replace Discord or invent a new client.
+## Update / rollback (next iterations)
+
+Planned hardening still includes: remote registry fetch, package hash/signature verification, permission-change prompts, recoverable previous versions, and update-all. Until then, update Nexora via git + `pnpm build` + `pnpm nexora:repair`.
+
+## Offline
+
+If a future remote registry is unreachable, installed plugin settings remain available in Plugin Manager; the store tab will report the error.

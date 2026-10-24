@@ -1,0 +1,21 @@
+/* Nexora Declutter — best-effort selectors; Discord class names change often */
+
+html.nx-hide-gift [class*="giftButton"],
+html.nx-hide-gift button[aria-label*="Gift" i] {
+    display: none !important;
+}
+
+html.nx-hide-help a[href*="support.discord.com"],
+html.nx-hide-help [class*="helpButton"] {
+    display: none !important;
+}
+
+html.nx-hide-download-apps [href*="discord.com/download"],
+html.nx-hide-download-apps [class*="appDownload"] {
+    display: none !important;
+}
+
+html.nx-compact-members [class*="members_"] [class*="member_"] {
+    margin-bottom: 0 !important;
+    min-height: 32px !important;
+}

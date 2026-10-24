@@ -46,18 +46,22 @@ Close Discord completely, then:
 
 ```bash
 pnpm build
-pnpm inject:stable
+pnpm nexora:status
+pnpm nexora:explain
+pnpm nexora:install
 ```
 
-`pnpm inject` / `pnpm inject:stable` run the upstream [Vencord Installer](https://github.com/Vencord/Installer) CLI against this repository’s `dist/` (via `VENCORD_USER_DATA_DIR`). Use single-dash flags (`-install`, `-branch stable`); double-dash `--install` opens the interactive menu instead.
+`pnpm nexora:install` wraps the upstream [Vencord Installer](https://github.com/Vencord/Installer) CLI with conflict detection. If `_app.asar` already exists, install refuses unless you pass `--force` (`pnpm nexora:install:force`) or uninstall first (`pnpm nexora:uninstall`).
 
-Verified on this machine (Stage 1): Discord Stable under `%LOCALAPPDATA%\Discord` (app-1.0.9262) patched successfully — `app.asar` replaced, original kept as `_app.asar`.
+Low-level aliases: `pnpm inject:stable` / `pnpm uninject:stable` (single-dash `-install` flags).
 
-**Compatibility:** Do not claim a Discord release is supported until inject + launch have been verified on that build. Discord updates may undo the patch; rebuild and re-inject after Discord updates.
+Verified: Discord Stable under `%LOCALAPPDATA%\Discord` can be patched (`app.asar` loader + `_app.asar` backup).
+
+**Compatibility:** Do not claim a Discord release is supported until inject + launch have been verified on that build. Discord updates may undo the patch; rebuild and re-inject / `pnpm nexora:repair` after Discord updates.
 
 ### Conflicts with other mods
 
-If another client modification already patched `app.asar`, do not silently overwrite it. Prefer uninstalling the other mod first, or use the installer’s repair/uninstall flows. Nexora-branded conflict messaging is planned for a later stage; Stage 1 documents honest reuse of the upstream injector.
+Nexora will not silently overwrite another Vencord-style patch without `--force`. Prefer `pnpm nexora:uninstall` then `pnpm nexora:install`, or `pnpm nexora:repair --force` when you intentionally replace the loader.
 
 ## Uninstall
 
