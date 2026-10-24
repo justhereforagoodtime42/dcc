@@ -306,6 +306,43 @@ body,
 `;
     }
 
+    // Only when we wiped design tokens — variable themes (NAAT/ClearVision) keep normal settings
+    if (!variableTheme) {
+        out += `
+/* Nexora: solid User Settings after token wipe */
+[class*="layer_"]:has([class*="standardSidebarView_"]),
+[class*="layer_"]:has([class*="contentRegion_"]),
+[class*="standardSidebarView_"],
+[class*="contentRegion_"],
+[class*="sidebarRegion_"],
+[class*="contentRegionScroller_"],
+[class*="sidebarRegionScroller_"],
+[class*="standardSidebarView_"] [class*="scroller_"],
+[class*="contentRegion_"] [class*="scroller_"],
+[class*="sidebarRegion_"] [class*="scroller_"] {
+  background: var(--background-secondary, #2b2d31) !important;
+  background-color: var(--background-secondary, #2b2d31) !important;
+  background-image: none !important;
+}
+
+[class*="standardSidebarView_"],
+[class*="contentRegion_"],
+[class*="sidebarRegion_"],
+[class*="layer_"]:has([class*="standardSidebarView_"]) {
+  --background-primary: #313338 !important;
+  --background-secondary: #2b2d31 !important;
+  --background-secondary-alt: #232428 !important;
+  --background-tertiary: #1e1f22 !important;
+  --background-accent: #1e1f22 !important;
+  --background-base-lowest: #1e1f22 !important;
+  --background-base-lower: #232428 !important;
+  --background-base-low: #2b2d31 !important;
+  --bg-overlay-chat: #2b2d31 !important;
+  --bg-overlay-app-frame: #2b2d31 !important;
+}
+`;
+    }
+
     return out;
 }
 

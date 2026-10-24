@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { SETTINGS_FILE, THEMES_DIR } from "@main/utils/constants";
+import { THEMES_DIR } from "@main/utils/constants";
 import {
     copyFileSync,
     existsSync,
@@ -16,7 +16,7 @@ import {
 import { join } from "path";
 
 /** Bump when shipped theme CSS / wallpapers change so installs refresh. */
-export const NEXORA_DEFAULT_THEMES_VERSION = 4;
+export const NEXORA_DEFAULT_THEMES_VERSION = 6;
 
 const STAMP_NAME = ".nexora-defaults-version";
 const CACHE_DIR_NAME = ".image-cache";
@@ -30,31 +30,10 @@ function isManagedTheme(css: string) {
     return /@nexoraManaged\s+true/i.test(css);
 }
 
-function ensureDefaultThemesEnabled() {
-    try {
-        if (!existsSync(SETTINGS_FILE)) return;
-        const raw = readFileSync(SETTINGS_FILE, "utf-8");
-        const settings = JSON.parse(raw);
-        if (!settings || typeof settings !== "object") return;
-
-        const files = readdirSync(THEMES_DIR).filter(f => f.endsWith(".theme.css"));
-        if (!files.length) return;
-
-        const enabled: string[] = Array.isArray(settings.enabledThemes) ? settings.enabledThemes : [];
-        // Fresh install: nothing enabled yet → turn on New Rem as the showcase default
-        if (enabled.length === 0 && files.includes("NewRemTheme.theme.css")) {
-            settings.enabledThemes = ["NewRemTheme.theme.css"];
-            writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 4), "utf-8");
-            console.info("[Nexora] Enabled NewRemTheme by default");
-        }
-    } catch (err) {
-        console.error("[Nexora] Failed to set default enabled theme", err);
-    }
-}
-
 /**
  * Copy bundled themes (+ wallpaper cache) into the user themes folder.
  * Missing files are always installed; managed themes refresh when the stamp version bumps.
+ * Themes are left disabled — user enables one in Settings.
  */
 export function seedDefaultThemes() {
     const srcRoot = defaultsDir();
@@ -110,5 +89,4 @@ export function seedDefaultThemes() {
     }
 
     writeFileSync(stampPath, String(NEXORA_DEFAULT_THEMES_VERSION), "utf-8");
-    ensureDefaultThemesEnabled();
 }
