@@ -1,14 +1,16 @@
 /*
- * Nexora Declutter plugin
+ * Declutter plugin
  * Copyright (c) 2026 Nexora contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings, SettingsStore } from "@api/Settings";
+import { definePluginSettings, migratePluginSettings, SettingsStore } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 
 import { NexoraAuthors } from "../_shared/nexoraShared";
 import managedStyle from "./style.css?managed";
+
+migratePluginSettings("Declutter", "NexoraDeclutter");
 
 const settings = definePluginSettings({
     hideGiftButton: {
@@ -42,20 +44,21 @@ function applyClasses() {
 }
 
 export default definePlugin({
-    name: "NexoraDeclutter",
+    name: "Declutter",
     description: "Hide or densify supported Discord UI chrome via CSS (restorable)",
     authors: [...NexoraAuthors],
     tags: ["Appearance"],
+    enabledByDefault: true,
     settings,
     managedStyle,
 
     start() {
         applyClasses();
-        SettingsStore.addChangeListener("plugins.NexoraDeclutter", applyClasses);
+        SettingsStore.addChangeListener("plugins.Declutter", applyClasses);
     },
 
     stop() {
-        SettingsStore.removeChangeListener("plugins.NexoraDeclutter", applyClasses);
+        SettingsStore.removeChangeListener("plugins.Declutter", applyClasses);
         document.documentElement.classList.remove(
             "nx-hide-gift", "nx-hide-help", "nx-hide-download-apps", "nx-compact-members"
         );

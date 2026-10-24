@@ -1,14 +1,16 @@
 /*
- * Nexora Auto Jump to Message
+ * Auto Jump to Message
  * Copyright (c) 2026 Nexora contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { MessageActions, NavigationRouter, showToast } from "@webpack/common";
 
 import { NexoraAuthors } from "../_shared/nexoraShared";
+
+migratePluginSettings("AutoJumpToMessage", "NexoraAutoJumpToMessage");
 
 const settings = definePluginSettings({
     enabled: {
@@ -52,7 +54,6 @@ function onClick(e: MouseEvent) {
     const t = e.target as HTMLElement | null;
     const a = t?.closest?.("a[href]") as HTMLAnchorElement | null;
     if (!a?.href || !LINK_RE.test(a.href)) return;
-    // Let Discord handle if modifier keys want new tab
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
@@ -60,10 +61,11 @@ function onClick(e: MouseEvent) {
 }
 
 export default definePlugin({
-    name: "NexoraAutoJumpToMessage",
+    name: "AutoJumpToMessage",
     description: "Jump to referenced Discord message links; handles missing/inaccessible targets",
     authors: [...NexoraAuthors],
     tags: ["Utility"],
+    enabledByDefault: true,
     settings,
 
     start() {

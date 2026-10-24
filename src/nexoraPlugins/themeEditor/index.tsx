@@ -1,16 +1,18 @@
 /*
- * Nexora Theme Editor plugin
+ * Theme Editor plugin
  * Copyright (c) 2026 Nexora contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import { userStyleRootNode } from "@api/Styles";
 import { createAndAppendStyle } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
 
 import { NexoraAuthors } from "../_shared/nexoraShared";
 import { DEFAULT_THEME, NexoraThemeJson, themeToCss, validateTheme } from "./themeJson";
+
+migratePluginSettings("ThemeEditor", "NexoraThemeEditor");
 
 const settings = definePluginSettings({
     themeJson: {
@@ -76,10 +78,11 @@ export function clearThemeCss() {
 export { settings as themeEditorSettings };
 
 export default definePlugin({
-    name: "NexoraThemeEditor",
+    name: "ThemeEditor",
     description: "Visual .theme.json theme engine (CSS only; optional custom CSS is opt-in)",
     authors: [...NexoraAuthors],
     tags: ["Appearance"],
+    enabledByDefault: true,
     settings,
 
     start() {

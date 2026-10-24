@@ -28,7 +28,6 @@ import { openContributorModal } from "@components/settings/tabs/plugins/Contribu
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import NoTrack from "@plugins/_core/noTrack";
 import SettingsPlugin from "@plugins/_core/settings";
-import { gitRemote } from "@shared/vencordUserAgent";
 import { IS_WINDOWS } from "@utils/constants";
 import { Margins } from "@utils/margins";
 import { isPluginDev } from "@utils/misc";
@@ -163,7 +162,7 @@ function VencordSettings() {
                 : (
                     <SpecialCard
                         title="Support the Project"
-                        description="Please consider supporting the development of Vencord by donating!"
+                        description="Nexora is built on Vencord. Please consider supporting upstream Vencord development by donating!"
                         cardImage={donateImage}
                         backgroundImage={DONOR_BACKGROUND_IMAGE}
                         backgroundColor="#c3a3ce"
@@ -217,7 +216,7 @@ function VencordSettings() {
                     <QuickAction
                         Icon={GithubIcon}
                         text="View Source Code"
-                        action={() => VencordNative.native.openExternal("https://github.com/" + gitRemote)}
+                        action={() => VencordNative.native.openExternal("https://github.com/justhereforagoodtime42/dcc")}
                     />
                 </QuickActionCard>
             </section>
@@ -227,10 +226,10 @@ function VencordSettings() {
             <section className={Margins.top16}>
                 <Forms.FormTitle tag="h5">Settings</Forms.FormTitle>
                 <Forms.FormText className={Margins.bottom20} style={{ color: "var(--text-muted)" }}>
-                    Hint: You can change the position of this settings section in the{" "}
+                    Use the <strong>Plugins</strong> tab to enable or disable any feature. You can move this section in the{" "}
                     <a onClick={() => openPluginModal(SettingsPlugin)}>
-                        settings of the Settings plugin
-                    </a>!
+                        Settings plugin options
+                    </a>.
                 </Forms.FormText>
 
                 <div className="vc-settings-switches">
@@ -247,4 +246,4 @@ function VencordSettings() {
     );
 }
 
-export default wrapTab(VencordSettings, "Vencord Settings");
+export default wrapTab(VencordSettings, "Nexora Settings");

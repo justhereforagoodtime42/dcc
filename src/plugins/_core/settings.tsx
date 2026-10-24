@@ -17,7 +17,7 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
-import { BackupRestoreIcon, CloudIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
+import { BackupRestoreIcon, CloudIcon, InfoIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
 import { BackupAndRestoreTab, CloudTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab, VencordTab } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
 import { isTruthy } from "@utils/guards";
@@ -26,6 +26,12 @@ import { waitFor } from "@webpack";
 import { React } from "@webpack/common";
 import type { ComponentType, PropsWithChildren, ReactNode } from "react";
 
+import AboutTab from "../../nexoraPlugins/_settingsTabs/AboutTab";
+import ImportExportTab from "../../nexoraPlugins/_settingsTabs/ImportExportTab";
+import PluginCreatorTab from "../../nexoraPlugins/_settingsTabs/PluginCreatorTab";
+import PluginStoreTab from "../../nexoraPlugins/_settingsTabs/PluginStoreTab";
+import ThemeEditorTab from "../../nexoraPlugins/_settingsTabs/ThemeEditorTab";
+import UpdatesTab from "../../nexoraPlugins/_settingsTabs/UpdatesTab";
 import gitHash from "~git-hash";
 
 let LayoutTypes = {
@@ -80,7 +86,7 @@ interface SettingsLayoutBuilder {
 const settings = definePluginSettings({
     settingsLocation: {
         type: OptionType.SELECT,
-        description: "Where to put the Vencord settings section",
+        description: "Where to put the Nexora settings section",
         options: [
             { label: "At the very top", value: "top" },
             { label: "Above the Nitro section", value: "aboveNitro", default: true },
@@ -92,7 +98,7 @@ const settings = definePluginSettings({
     },
     includeVencordInfoWhenCopying: {
         type: OptionType.BOOLEAN,
-        description: "Also copy Vencord info (Vencord, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page",
+        description: "Also copy Nexora info (Nexora, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page",
         default: true
     }
 });
@@ -163,55 +169,93 @@ export default definePlugin({
         if (originalLayoutBuilder.key !== "$Root") return layout;
         if (!Array.isArray(layout)) return layout;
 
-        if (layout.some(s => s?.key === "vencord_section")) return layout;
+        if (layout.some(s => s?.key === "nexora_section" || s?.key === "vencord_section")) return layout;
 
         const { buildEntry } = this;
 
-        const vencordEntries: SettingsLayoutNode[] = [
+        const nexoraEntries: SettingsLayoutNode[] = [
             buildEntry({
-                key: "vencord_main",
-                title: "Vencord",
-                panelTitle: "Vencord Settings",
+                key: "nexora_main",
+                title: "Nexora",
+                panelTitle: "Nexora Settings",
                 Component: VencordTab,
                 Icon: MainSettingsIcon
             }),
             buildEntry({
-                key: "vencord_plugins",
+                key: "nexora_plugins",
                 title: "Plugins",
+                panelTitle: "Plugins",
                 Component: PluginsTab,
                 Icon: PluginsIcon
             }),
             buildEntry({
-                key: "vencord_themes",
+                key: "nexora_plugin_store",
+                title: "Plugin Store",
+                Component: PluginStoreTab,
+                Icon: PluginsIcon
+            }),
+            buildEntry({
+                key: "nexora_themes",
                 title: "Themes",
                 Component: ThemesTab,
                 Icon: PaintbrushIcon
             }),
+            buildEntry({
+                key: "nexora_theme_editor",
+                title: "Theme Editor",
+                Component: ThemeEditorTab,
+                Icon: PaintbrushIcon
+            }),
+            buildEntry({
+                key: "nexora_plugin_creator",
+                title: "Plugin Creator",
+                Component: PluginCreatorTab,
+                Icon: PatchHelperIcon
+            }),
             !IS_UPDATER_DISABLED && UpdaterTab && buildEntry({
-                key: "vencord_updater",
+                key: "nexora_updater",
                 title: "Updater",
-                panelTitle: "Vencord Updater",
+                panelTitle: "Updater",
                 Component: UpdaterTab,
                 Icon: UpdaterIcon
             }),
             buildEntry({
-                key: "vencord_cloud",
+                key: "nexora_updates",
+                title: "Updates",
+                Component: UpdatesTab,
+                Icon: UpdaterIcon
+            }),
+            buildEntry({
+                key: "nexora_cloud",
                 title: "Cloud",
-                panelTitle: "Vencord Cloud",
+                panelTitle: "Cloud Sync",
                 Component: CloudTab,
                 Icon: CloudIcon
             }),
             buildEntry({
-                key: "vencord_backup_restore",
+                key: "nexora_backup_restore",
                 title: "Backup & Restore",
                 Component: BackupAndRestoreTab,
                 Icon: BackupRestoreIcon
             }),
+            buildEntry({
+                key: "nexora_import_export",
+                title: "Import / Export",
+                Component: ImportExportTab,
+                Icon: BackupRestoreIcon
+            }),
             !IS_STANDALONE && PatchHelperTab && buildEntry({
-                key: "vencord_patch_helper",
+                key: "nexora_patch_helper",
                 title: "Patch Helper",
                 Component: PatchHelperTab,
                 Icon: PatchHelperIcon
+            }),
+            buildEntry({
+                key: "nexora_about",
+                title: "About",
+                panelTitle: "About & Diagnostics",
+                Component: AboutTab,
+                Icon: InfoIcon
             }),
             ...this.customEntries.map(buildEntry),
             // TODO: Remove deprecated customSections in a future update
@@ -220,7 +264,7 @@ export default definePlugin({
                 if (Object.values(FallbackSectionTypes).includes(section)) return null;
 
                 return buildEntry({
-                    key: `vencord_deprecated_custom_${section}`,
+                    key: `nexora_deprecated_custom_${section}`,
                     title: label,
                     Component: element,
                     Icon: section === "Vesktop" ? VesktopSettingsIcon : PlaceholderIcon
@@ -228,11 +272,11 @@ export default definePlugin({
             })
         ].filter(isTruthy);
 
-        const vencordSection: SettingsLayoutNode = {
-            key: "vencord_section",
+        const nexoraSection: SettingsLayoutNode = {
+            key: "nexora_section",
             type: LayoutTypes.SECTION,
-            useTitle: () => "Vencord Settings",
-            buildLayout: () => vencordEntries
+            useTitle: () => "Nexora Settings",
+            buildLayout: () => nexoraEntries
         };
 
         const { settingsLocation } = settings.store;
@@ -255,7 +299,7 @@ export default definePlugin({
             idx += 1;
         }
 
-        layout.splice(idx, 0, vencordSection);
+        layout.splice(idx, 0, nexoraSection);
 
         return layout;
     },
@@ -290,7 +334,7 @@ export default definePlugin({
     getInfoRows() {
         const { electronVersion, chromiumVersion, additionalInfo } = this;
 
-        const rows = [`Vencord ${gitHash}${additionalInfo}`];
+        const rows = [`Nexora ${gitHash}${additionalInfo}`];
 
         if (electronVersion) rows.push(`Electron ${electronVersion}`);
         if (chromiumVersion) rows.push(`Chromium ${chromiumVersion}`);

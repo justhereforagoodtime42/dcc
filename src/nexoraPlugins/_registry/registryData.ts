@@ -7,10 +7,10 @@
 export const NEXORA_REGISTRY = {
     schemaVersion: 1,
     updatedAt: "2026-10-24",
-    featured: ["nexora.declutter", "nexora.splitLargeMessages", "nexora.themeEditor"],
+    featured: ["Declutter", "SplitLargeMessages", "ThemeEditor"],
     plugins: [
         {
-            id: "nexora.declutter",
+            id: "Declutter",
             name: "Declutter",
             description: "Hide or collapse supported Discord UI chrome via CSS rules.",
             author: "Nexora",
@@ -22,7 +22,7 @@ export const NEXORA_REGISTRY = {
             permissions: ["ui.css"],
         },
         {
-            id: "nexora.splitLargeMessages",
+            id: "SplitLargeMessages",
             name: "Split Large Messages",
             description: "Split long outgoing text into chunks with preview and confirmation.",
             author: "Nexora",
@@ -34,7 +34,7 @@ export const NEXORA_REGISTRY = {
             permissions: ["messages.send"],
         },
         {
-            id: "nexora.downloadAllAttachments",
+            id: "DownloadAllAttachments",
             name: "Download All Attachments",
             description: "Download message attachments the client can access.",
             author: "Nexora",
@@ -46,7 +46,7 @@ export const NEXORA_REGISTRY = {
             permissions: ["attachments.download"],
         },
         {
-            id: "nexora.autoJumpToMessage",
+            id: "AutoJumpToMessage",
             name: "Auto Jump to Message",
             description: "Navigate to referenced messages when links are opened.",
             author: "Nexora",
@@ -58,7 +58,7 @@ export const NEXORA_REGISTRY = {
             permissions: ["navigation"],
         },
         {
-            id: "nexora.themeEditor",
+            id: "ThemeEditor",
             name: "Theme Editor",
             description: "Visual .theme.json editor compiling to CSS variables.",
             author: "Nexora",

@@ -4,7 +4,7 @@
   "featured": ["nexora.declutter", "nexora.splitLargeMessages", "nexora.themeEditor"],
   "plugins": [
     {
-      "id": "nexora.declutter",
+      "id": "Declutter",
       "name": "Declutter",
       "description": "Hide or collapse supported Discord UI chrome via CSS rules.",
       "author": "Nexora",
@@ -17,7 +17,7 @@
       "compatibility": { "nexora": ">=0.1.0" }
     },
     {
-      "id": "nexora.splitLargeMessages",
+      "id": "SplitLargeMessages",
       "name": "Split Large Messages",
       "description": "Split long outgoing text into chunks with preview and confirmation.",
       "author": "Nexora",
@@ -30,7 +30,7 @@
       "compatibility": { "nexora": ">=0.1.0" }
     },
     {
-      "id": "nexora.downloadAllAttachments",
+      "id": "DownloadAllAttachments",
       "name": "Download All Attachments",
       "description": "Download message attachments the client can access, with progress and cancel.",
       "author": "Nexora",
@@ -43,7 +43,7 @@
       "compatibility": { "nexora": ">=0.1.0" }
     },
     {
-      "id": "nexora.autoJumpToMessage",
+      "id": "AutoJumpToMessage",
       "name": "Auto Jump to Message",
       "description": "Navigate to referenced messages when links are opened, with graceful failure.",
       "author": "Nexora",
@@ -56,7 +56,7 @@
       "compatibility": { "nexora": ">=0.1.0" }
     },
     {
-      "id": "nexora.themeEditor",
+      "id": "ThemeEditor",
       "name": "Theme Editor",
       "description": "Visual .theme.json editor compiling to CSS variables.",
       "author": "Nexora",

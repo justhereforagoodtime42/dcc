@@ -1,15 +1,17 @@
 /*
- * Nexora Download All Attachments
+ * Download All Attachments
  * Copyright (c) 2026 Nexora contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { Menu, React, showToast } from "@webpack/common";
 
 import { NexoraAuthors } from "../_shared/nexoraShared";
+
+migratePluginSettings("DownloadAllAttachments", "NexoraDownloadAllAttachments");
 
 const settings = definePluginSettings({
     openExternally: {
@@ -56,12 +58,7 @@ async function downloadAll(message: any) {
         }
         const name = uniqueName(att.filename || "attachment", used);
         try {
-            if (IS_DISCORD_DESKTOP && (window as any).DiscordNative?.fileManager?.saveWithDialog) {
-                // Prefer native save when available; fall back to open
-                window.open(url, "_blank", "noopener,noreferrer");
-            } else {
-                window.open(url, "_blank", "noopener,noreferrer");
-            }
+            window.open(url, "_blank", "noopener,noreferrer");
             ok++;
             void name;
         } catch {
@@ -88,10 +85,11 @@ const messageCtx: NavContextMenuPatchCallback = (children, { message }: { messag
 };
 
 export default definePlugin({
-    name: "NexoraDownloadAllAttachments",
+    name: "DownloadAllAttachments",
     description: "Context action to download/open all attachments on a message (no auto-execute)",
     authors: [...NexoraAuthors],
     tags: ["Utility"],
+    enabledByDefault: true,
     settings,
     contextMenus: {
         message: messageCtx

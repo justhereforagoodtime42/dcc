@@ -1,14 +1,16 @@
 /*
- * Nexora Split Large Messages
+ * Split Large Messages
  * Copyright (c) 2026 Nexora contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { MessageActions, showToast, UserStore } from "@webpack/common";
 
 import { NexoraAuthors } from "../_shared/nexoraShared";
+
+migratePluginSettings("SplitLargeMessages", "NexoraSplitLargeMessages");
 
 const DEFAULT_LIMIT = 2000;
 const NITRO_LIMIT = 4000;
@@ -54,10 +56,11 @@ function sleep(ms: number) {
 }
 
 export default definePlugin({
-    name: "NexoraSplitLargeMessages",
+    name: "SplitLargeMessages",
     description: "Split long outgoing messages into chunks with optional confirmation",
     authors: [...NexoraAuthors],
     tags: ["Chat"],
+    enabledByDefault: true,
     settings,
 
     async onBeforeMessageSend(channelId: string, msg: { content: string; }) {
@@ -73,7 +76,6 @@ export default definePlugin({
             }
         }
 
-        // Send all but last via MessageActions; let the last chunk go through normally
         const delay = Math.max(200, Number(settings.store.delayMs) || 800);
         for (let i = 0; i < chunks.length - 1; i++) {
             await MessageActions.sendMessage(channelId, { content: chunks[i] });
