@@ -129,11 +129,21 @@ function isCssVariableWallpaperTheme(css: string) {
 }
 
 /**
- * Wallpaper-only themes (Aura / Aurther style): keep Discord chrome + settings opaque.
- * Set `@nexoraOpaque true` or `@nexoraWallpaperOnly true` in the theme header.
+ * Wallpaper-only / opaque themes: keep Discord chrome + settings solid.
+ * Explicit: `@nexoraOpaque true` / `@nexoraWallpaperOnly true`
+ * Or simple themes that only set a wallpaper (no existing see-through rules).
  */
 function isOpaqueWallpaperTheme(css: string) {
-    return /@nexoraOpaque\s+true/i.test(css) || /@nexoraWallpaperOnly\s+true/i.test(css);
+    if (/@nexoraOpaque\s+true/i.test(css) || /@nexoraWallpaperOnly\s+true/i.test(css)) return true;
+    if (/@nexoraTransparent\s+true/i.test(css)) return false;
+    // ClearVision / NAAT-style variable themes still need our chrome handling
+    if (isCssVariableWallpaperTheme(css)) return false;
+    // Themes that already punch through Discord UI (New Rem, Akame, …)
+    const transparentHits = (css.match(/transparent\s*!important/gi) || []).length;
+    if (transparentHits >= 5) return false;
+    if (/--background-primary\s*:\s*transparent/i.test(css)) return false;
+    // Simple wallpaper-only CSS → do not force settings/chat transparent
+    return true;
 }
 
 /**
