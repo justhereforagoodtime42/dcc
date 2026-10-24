@@ -27,7 +27,9 @@ Download **Uninstall-Nexora.ps1** from the same release, or:
 irm https://github.com/justhereforagoodtime42/dcc/releases/download/nexora-latest/Uninstall-Nexora.ps1 | iex
 ```
 
-After Discord updates, run the installer again.
+After Discord updates, run the installer again (or just restart Discord — one-click installs auto-check GitHub for a newer Nexora build).
+
+Your friend’s themes in `%AppData%\Nexora\themes` are **theirs** and are not overwritten by updates.
 
 ---
 

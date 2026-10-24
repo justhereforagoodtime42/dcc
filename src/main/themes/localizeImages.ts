@@ -129,6 +129,14 @@ function isCssVariableWallpaperTheme(css: string) {
 }
 
 /**
+ * Wallpaper-only themes (Aura / Aurther style): keep Discord chrome + settings opaque.
+ * Set `@nexoraOpaque true` or `@nexoraWallpaperOnly true` in the theme header.
+ */
+function isOpaqueWallpaperTheme(css: string) {
+    return /@nexoraOpaque\s+true/i.test(css) || /@nexoraWallpaperOnly\s+true/i.test(css);
+}
+
+/**
  * Only widen .app__XXXX rules that actually set a wallpaper url(...).
  * Blindly expanding every .app__ rule (e.g. ClearVision shading) onto [class*="bg_"]
  * wipes the wallpaper with a solid/shading shorthand.
@@ -317,6 +325,11 @@ export async function localizeThemeCssImages(css: string): Promise<string> {
         } catch (err) {
             console.error("[Nexora] Failed to cache theme image", url, err);
         }
+    }
+
+    // Opaque / wallpaper-only: cache remote images but do NOT punch through settings/chat
+    if (isOpaqueWallpaperTheme(out)) {
+        return out;
     }
 
     const wallpapers = pickWallpaperUrls(out, localByRemote);

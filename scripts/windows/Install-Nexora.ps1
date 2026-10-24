@@ -136,7 +136,8 @@ try {
     Write-Host "Bundled themes land in %AppData%\Nexora\themes on first launch."
     Write-Host "Keep this folder: $InstallRoot (Discord loads Nexora from here)."
     Write-Host ""
-    Write-Host "After Discord updates, run this installer again."
+    Write-Host "Later: restart Discord to pick up Nexora updates automatically."
+    Write-Host "If Discord itself updates and breaks the patch, run this installer again."
 }
 catch {
     Write-Host ""

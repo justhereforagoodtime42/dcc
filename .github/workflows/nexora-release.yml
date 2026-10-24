@@ -47,6 +47,8 @@ jobs:
           if [ -d dist/themes ]; then
             cp -a dist/themes "$STAGE/dist/"
           fi
+          # Build id so clients can auto-update without re-running the installer
+          git rev-parse --short HEAD > "$STAGE/dist/.nexora-release-id"
           # One-click installer scripts
           mkdir -p "$STAGE"
           cp scripts/windows/Install-Nexora.ps1 scripts/windows/Uninstall-Nexora.ps1 scripts/windows/Install-Nexora.bat "$STAGE/"
