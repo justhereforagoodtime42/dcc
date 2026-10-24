@@ -10,10 +10,13 @@ import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 
-import { NexoraAuthors } from "../_shared/nexoraShared";
+import { AcidicReturns } from "../_shared/nexoraShared";
 import hideStyle from "./hide.css?managed";
 
 const logger = new Logger("HideDisabledEmojis");
+
+/** Original BetterDiscord author (https://betterdiscord.app/plugin/HideDisabledEmojis) */
+const Zerebos = { name: "Zerebos", id: 249746236008169473n } as const;
 
 const EmojiInfo = findByPropsLazy("isEmojiDisabled", "isEmojiFiltered");
 
@@ -22,7 +25,7 @@ let originalIsEmojiFiltered: ((...args: any[]) => boolean) | undefined;
 export default definePlugin({
     name: "HideDisabledEmojis",
     description: "Hides disabled / locked emojis from the emoji picker (useful without Nitro)",
-    authors: [...NexoraAuthors],
+    authors: [Zerebos, AcidicReturns],
     tags: ["Utility", "Chat"],
     enabledByDefault: true,
 

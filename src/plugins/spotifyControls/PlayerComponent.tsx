@@ -31,7 +31,7 @@ import { ContextMenuApi, FluxDispatcher, Menu, React, useEffect, useState, useSt
 
 import { settings } from ".";
 import { SeekBar } from "./SeekBar";
-import { SpotifyStore, Track } from "./SpotifyStore";
+import { QueueTrack, SpotifyStore, Track } from "./SpotifyStore";
 
 const cl = classNameFactory("vc-spotify-");
 
@@ -347,6 +347,50 @@ function Info({ track }: { track: Track; }) {
     );
 }
 
+function UpcomingQueue() {
+    const enabled = settings.use(["showUpcomingQueue"]).showUpcomingQueue;
+    const queue = useStateFromStores([SpotifyStore], () => SpotifyStore.queue);
+
+    useEffect(() => {
+        if (enabled) SpotifyStore.fetchQueue();
+    }, [enabled]);
+
+    if (!enabled || !queue.length) return null;
+
+    return (
+        <div className={cl("queue")} aria-label="Upcoming songs">
+            <Paragraph size="xs" weight="bold" className={cl("queue-heading")}>
+                Up next
+            </Paragraph>
+            {queue.map((item: QueueTrack, i) => (
+                <div
+                    key={`${item.id}-${i}`}
+                    className={cl("queue-item")}
+                    title={`${item.name} — ${item.artists}`}
+                    onClick={() => {
+                        if (item.uri?.startsWith("spotify:track:"))
+                            SpotifyStore.openExternal(`/track/${item.id}`);
+                    }}
+                >
+                    {item.imageUrl ? (
+                        <img className={cl("queue-art")} src={item.imageUrl} alt="" />
+                    ) : (
+                        <div className={cl("queue-art", "queue-art-empty")} />
+                    )}
+                    <div className={cl("queue-meta")}>
+                        <Paragraph size="xs" weight="medium" className={cl(["ellipoverflow", "queue-title"])}>
+                            {item.name}
+                        </Paragraph>
+                        <Paragraph size="xs" className={cl(["ellipoverflow", "queue-artists", "secondary-song-info"])}>
+                            {item.artists}
+                        </Paragraph>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 export function Player() {
     const track = useStateFromStores(
         [SpotifyStore],
@@ -387,6 +431,7 @@ export function Player() {
             <Info track={track} />
             <SpotifySeekBar />
             <Controls />
+            <UpcomingQueue />
         </div>
     );
 }

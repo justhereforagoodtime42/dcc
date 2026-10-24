@@ -22,8 +22,10 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 
+import { AcidicReturns } from "../../nexoraPlugins/_shared/nexoraShared";
 import hoverOnlyStyle from "./hoverOnly.css?managed";
 import { Player } from "./PlayerComponent";
+import { SpotifyStore } from "./SpotifyStore";
 
 export const settings = definePluginSettings({
     hoverControls: {
@@ -53,6 +55,18 @@ export const settings = definePluginSettings({
         description: "Keep Spotify activity showing when Discord is idle",
         default: false,
         restartNeeded: true
+    },
+    showUpcomingQueue: {
+        type: OptionType.BOOLEAN,
+        description: "Show the next few upcoming songs from your Spotify queue under the player",
+        default: true,
+        onChange: () => SpotifyStore.fetchQueue()
+    },
+    upcomingQueueCount: {
+        type: OptionType.NUMBER,
+        description: "How many upcoming songs to show (1–10)",
+        default: 1,
+        onChange: () => SpotifyStore.fetchQueue()
     }
 });
 
@@ -64,7 +78,7 @@ export default definePlugin({
     name: "SpotifyControls",
     description: "Adds a Spotify player above the account panel, with optional no auto-pause in voice",
     tags: ["Media", "Activity"],
-    authors: [Devs.Ven, Devs.afn, Devs.KraXen72, Devs.Av32000, Devs.nin0dev, Devs.Cyn, Devs.Nuckyz],
+    authors: [Devs.Ven, Devs.afn, Devs.KraXen72, Devs.Av32000, Devs.nin0dev, Devs.Cyn, Devs.Nuckyz, AcidicReturns],
     settings,
     patches: [
         {

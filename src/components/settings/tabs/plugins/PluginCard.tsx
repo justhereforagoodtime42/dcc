@@ -75,10 +75,16 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         settings.enabled = !wasEnabled;
     }
 
+    const authorLabel = plugin.authors
+        ?.map(a => a.name)
+        .filter(Boolean)
+        .join(", ");
+
     return (
         <AddonCard
             name={plugin.name}
             description={plugin.description}
+            author={authorLabel || undefined}
             isNew={isNew}
             enabled={isEnabled()}
             setEnabled={toggleEnabled}

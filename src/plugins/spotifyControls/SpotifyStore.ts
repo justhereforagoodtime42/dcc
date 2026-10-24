@@ -46,6 +46,28 @@ export interface Track {
     }[];
 }
 
+/** Minimal track info for the upcoming-queue list */
+export interface QueueTrack {
+    id: string;
+    name: string;
+    artists: string;
+    imageUrl?: string;
+    uri?: string;
+}
+
+function mapSpotifyApiTrack(t: any): QueueTrack | null {
+    if (!t?.name) return null;
+    const images = t.album?.images;
+    const image = Array.isArray(images) ? (images[images.length - 1] || images[0]) : null;
+    return {
+        id: t.id || t.uri || t.name,
+        name: t.name,
+        artists: (t.artists || []).map((a: any) => a?.name).filter(Boolean).join(", ") || "Unknown",
+        imageUrl: image?.url,
+        uri: t.uri
+    };
+}
+
 interface PlayerState {
     accountId: string;
     track: Track | null;
@@ -88,8 +110,10 @@ export const SpotifyStore = proxyLazyWebpack(() => {
         public repeat: Repeat = "off";
         public shuffle = false;
         public volume = 0;
+        public queue: QueueTrack[] = [];
 
         public isSettingPosition = false;
+        private _queueTimer: any = null;
 
         public openExternal(path: string) {
             const url = settings.store.useSpotifyUris || isPluginEnabled(OpenInAppPlugin.name)
@@ -118,7 +142,40 @@ export const SpotifyStore = proxyLazyWebpack(() => {
         }
 
         next() {
-            this._req("post", "/next");
+            this._req("post", "/next").then(() => this.fetchQueue());
+        }
+
+        fetchQueue() {
+            if (!settings.store.showUpcomingQueue) {
+                if (this.queue.length) {
+                    this.queue = [];
+                    this.emitChange();
+                }
+                return Promise.resolve();
+            }
+
+            return this._req("get", "/queue")
+                .then((res: any) => {
+                    const body = res?.body ?? res;
+                    const raw = Array.isArray(body?.queue) ? body.queue : [];
+                    const limit = Math.max(1, Math.min(10, settings.store.upcomingQueueCount ?? 1));
+                    this.queue = raw
+                        .map(mapSpotifyApiTrack)
+                        .filter(Boolean)
+                        .slice(0, limit) as QueueTrack[];
+                    this.emitChange();
+                })
+                .catch((e: any) => {
+                    console.error("[SpotifyControls] Failed to fetch queue", e);
+                });
+        }
+
+        ensureQueuePolling() {
+            if (this._queueTimer) return;
+            this._queueTimer = setInterval(() => {
+                if (settings.store.showUpcomingQueue && this.device?.is_active)
+                    this.fetchQueue();
+            }, 15_000);
         }
 
         setVolume(percent: number) {
@@ -181,6 +238,7 @@ export const SpotifyStore = proxyLazyWebpack(() => {
 
     const store = new SpotifyStore(FluxDispatcher, {
         SPOTIFY_PLAYER_STATE(e: PlayerState) {
+            const trackChanged = store.track?.id !== e.track?.id;
             store.track = e.track;
             store.device = e.device ?? null;
             store.isPlaying = e.isPlaying ?? false;
@@ -190,10 +248,14 @@ export const SpotifyStore = proxyLazyWebpack(() => {
             store.position = e.position ?? 0;
             store.isSettingPosition = false;
             store.emitChange();
+            store.ensureQueuePolling();
+            if (trackChanged || settings.store.showUpcomingQueue)
+                store.fetchQueue();
         },
         SPOTIFY_SET_DEVICES({ devices }: { devices: Device[]; }) {
             store.device = devices.find(d => d.is_active) ?? devices[0] ?? null;
             store.emitChange();
+            if (store.device?.is_active) store.fetchQueue();
         }
     });
 

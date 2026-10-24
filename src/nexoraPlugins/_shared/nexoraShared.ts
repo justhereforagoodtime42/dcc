@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-export const NexoraAuthors = [{ name: "Nexora", id: 0n }] as const;
+/** Primary Nexora maintainer */
+export const AcidicReturns = { name: "acidicreturns", id: 771911590348849153n } as const;
+
+/** @deprecated prefer AcidicReturns — kept for older nexoraPlugins imports */
+export const NexoraAuthors = [AcidicReturns] as const;
 
 export const NEXORA_VERSION = "0.1.0";
 
