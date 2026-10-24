@@ -33,7 +33,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        # --standalone = HTTP updater (no git). Required for one-click installs.
+        run: pnpm build --standalone
 
       - name: Pack Windows zip
         run: |
