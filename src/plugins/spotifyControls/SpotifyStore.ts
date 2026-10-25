@@ -110,10 +110,15 @@ export const SpotifyStore = proxyLazyWebpack(() => {
         public repeat: Repeat = "off";
         public shuffle = false;
         public volume = 0;
+        public muted = false;
         public queue: QueueTrack[] = [];
+        /** Spotify context URI (playlist/album/…) when Discord provides it */
+        public contextUri: string | null = null;
 
         public isSettingPosition = false;
+        private _volumeTimer: any = null;
         private _queueTimer: any = null;
+        private _volumeBeforeMute = 50;
 
         public openExternal(path: string) {
             const url = settings.store.useSpotifyUris || isPluginEnabled(OpenInAppPlugin.name)
@@ -158,11 +163,10 @@ export const SpotifyStore = proxyLazyWebpack(() => {
                 .then((res: any) => {
                     const body = res?.body ?? res;
                     const raw = Array.isArray(body?.queue) ? body.queue : [];
-                    const limit = Math.max(1, Math.min(10, settings.store.upcomingQueueCount ?? 1));
                     this.queue = raw
                         .map(mapSpotifyApiTrack)
                         .filter(Boolean)
-                        .slice(0, limit) as QueueTrack[];
+                        .slice(0, 1) as QueueTrack[];
                     this.emitChange();
                 })
                 .catch((e: any) => {
@@ -179,19 +183,96 @@ export const SpotifyStore = proxyLazyWebpack(() => {
         }
 
         setVolume(percent: number) {
-            this._req("put", "/volume", {
-                query: {
-                    volume_percent: Math.round(percent)
-                }
+            const v = Math.max(0, Math.min(100, Math.round(percent)));
+            // Update UI immediately — Spotify’s API is slow
+            this.volume = v;
+            if (v > 0) {
+                this.muted = false;
+                this._volumeBeforeMute = v;
+            } else {
+                this.muted = true;
+            }
+            this.emitChange();
 
-            }).then(() => {
-                this.volume = percent;
-                this.emitChange();
-            });
+            if (this._volumeTimer) clearTimeout(this._volumeTimer);
+            this._volumeTimer = setTimeout(() => {
+                this._req("put", "/volume", {
+                    query: { volume_percent: v }
+                }).catch((e: any) => {
+                    console.error("[SpotifyControls] Failed to set volume", e);
+                });
+            }, 80);
+        }
+
+        /** Click speaker: mute → 0, unmute → restore volume from before mute */
+        toggleMute() {
+            if (this.muted || this.volume === 0) {
+                const restore = this._volumeBeforeMute > 0 ? this._volumeBeforeMute : 50;
+                this.muted = false;
+                this.setVolume(restore);
+            } else {
+                this._volumeBeforeMute = this.volume > 0 ? this.volume : this._volumeBeforeMute;
+                this.muted = true;
+                this.setVolume(0);
+                // setVolume(0) sets muted true again — keep before-mute saved
+                this._volumeBeforeMute = this._volumeBeforeMute || 50;
+            }
         }
 
         setPlaying(playing: boolean) {
             this._req("put", playing ? "/play" : "/pause");
+        }
+
+        /**
+         * Jump to a song in Up Next by skipping forward (same path as the Next button).
+         * Avoids PUT /play with a JSON body — Discord’s Spotify client doesn’t send those correctly,
+         * which was stopping playback entirely.
+         */
+        async playQueueItem(item: QueueTrack, index: number) {
+            if (!item?.uri && index < 0) return;
+
+            this.applyQueueItemOptimistically(item);
+
+            try {
+                const skips = Math.max(1, index + 1);
+                for (let i = 0; i < skips; i++) {
+                    await this._req("post", "/next");
+                    // Let Spotify apply each skip before the next (avoids dropped skips)
+                    if (i < skips - 1)
+                        await new Promise(r => setTimeout(r, 200));
+                }
+                await this.fetchQueue();
+            } catch (e) {
+                console.error("[SpotifyControls] Failed to jump to queue item", item?.uri, e);
+            }
+        }
+
+        private applyQueueItemOptimistically(item: QueueTrack) {
+            this.isPlaying = true;
+            this.position = 0;
+            this.track = {
+                id: item.id,
+                name: item.name,
+                duration: this.track?.duration ?? 0,
+                isLocal: false,
+                album: {
+                    id: "",
+                    name: "",
+                    image: {
+                        height: 64,
+                        width: 64,
+                        url: item.imageUrl || this.track?.album?.image?.url || ""
+                    }
+                },
+                artists: (item.artists || "Unknown").split(", ").map(name => ({
+                    id: "",
+                    href: "",
+                    name,
+                    type: "artist",
+                    uri: ""
+                }))
+            };
+            this.emitChange();
         }
 
         setRepeat(state: Repeat) {
@@ -242,10 +323,13 @@ export const SpotifyStore = proxyLazyWebpack(() => {
             store.track = e.track;
             store.device = e.device ?? null;
             store.isPlaying = e.isPlaying ?? false;
-            store.volume = e.volumePercent ?? 0;
+            store.volume = e.volumePercent ?? store.volume;
             store.repeat = e.actual_repeat || "off";
             store.shuffle = e.shuffle ?? false;
             store.position = e.position ?? 0;
+            store.contextUri = e.context?.uri ?? e.context?.external_url ?? store.contextUri;
+            // Discord sometimes sends context as { uri: "spotify:playlist:…" }
+            if (typeof e.context === "string") store.contextUri = e.context;
             store.isSettingPosition = false;
             store.emitChange();
             store.ensureQueuePolling();

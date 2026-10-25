@@ -8,7 +8,7 @@ import { isPluginEnabled } from "@api/PluginManager";
 import { Settings, useSettings } from "@api/Settings";
 import { Card } from "@components/Card";
 import { Flex } from "@components/Flex";
-import { FolderIcon, PaintbrushIcon, PencilIcon, PlusIcon, RestartIcon } from "@components/Icons";
+import { FolderIcon, PencilIcon, PlusIcon, RestartIcon } from "@components/Icons";
 import { Link } from "@components/Link";
 import { Margins } from "@components/margins";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
@@ -169,11 +169,6 @@ export function LocalThemesTab() {
                             text="Load missing Themes"
                             action={refreshLocalThemes}
                             Icon={RestartIcon}
-                        />
-                        <QuickAction
-                            text="Edit QuickCSS"
-                            action={() => VencordNative.quickCss.openEditor()}
-                            Icon={PaintbrushIcon}
                         />
 
                         {isPluginEnabled(ClientThemePlugin.name) && (

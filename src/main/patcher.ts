@@ -23,7 +23,7 @@ import { dirname, join } from "path";
 import { RendererSettings } from "./settings";
 import { IS_VANILLA } from "./utils/constants";
 
-console.log("[Vencord] Starting up...");
+console.log("[Nexora] Starting up...");
 
 // Our injector file at app/index.js
 const injectorPath = require.main!.filename;
@@ -136,5 +136,5 @@ if (!IS_VANILLA) {
     console.log("[Nexora] Running in vanilla mode. Not loading Nexora");
 }
 
-console.log("[Vencord] Loading original Discord app.asar");
+console.log("[Nexora] Loading original Discord app.asar");
 require(require.main!.filename);

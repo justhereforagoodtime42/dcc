@@ -75,7 +75,89 @@
 
 .vc-spotify-button-row {
     justify-content: center;
+    align-items: center;
     margin-top: 14px;
+    flex-wrap: wrap;
+    gap: 2px;
+}
+
+.vc-spotify-volume {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* Fixed footprint so expanding the slider doesn’t shove other icons */
+    width: 32px;
+    height: 32px;
+    margin: 0 2px;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+/* Same icon color as shuffle / play / etc. */
+.vc-spotify-volume-btn.vc-spotify-button {
+    color: var(--interactive-icon-default, #b5bac1);
+}
+
+.vc-spotify-volume-btn.vc-spotify-button:hover {
+    color: var(--interactive-icon-hover, #f2f3f5);
+}
+
+.vc-spotify-volume-muted.vc-spotify-button {
+    color: var(--status-danger, #f23f43);
+}
+
+.vc-spotify-volume-muted.vc-spotify-button:hover {
+    color: var(--status-danger, #f23f43);
+    filter: brightness(1.1);
+}
+
+/* Match shuffle/repeat icon size — speaker glyph reads larger at 24px */
+.vc-spotify-volume .vc-spotify-button-icon {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+    color: inherit;
+}
+
+/* Float to the right — flush to the icon so there’s no hover gap */
+.vc-spotify-volume-slider-wrap {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    /* left padding = hover bridge from icon → slider (no dead gap) */
+    padding: 4px 6px 4px 8px;
+    border-radius: 8px;
+    background: var(--background-floating, var(--background-mod-strong, rgba(0, 0, 0, 0.55)));
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.12s ease, visibility 0.12s ease;
+}
+
+/* Hover only (not focus-within) so mute/unmute click doesn’t leave the slider open */
+.vc-spotify-volume:hover .vc-spotify-volume-slider-wrap {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.vc-spotify-volume-slider {
+    width: 64px;
+    height: 3px;
+    accent-color: var(--interactive-icon-default, #b5bac1);
+    cursor: pointer;
+}
+
+.vc-spotify-queue-item-playable {
+    cursor: pointer;
+}
+
+.vc-spotify-queue-item-playable:hover .vc-spotify-queue-title {
+    color: var(--interactive-active, #fff);
 }
 
 .vc-spotify-secondary-song-info {

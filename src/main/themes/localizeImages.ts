@@ -103,7 +103,7 @@ function pickWallpaperUrls(css: string, localByRemote: Map<string, string>): str
     const varRe = /(--[a-z0-9-]*(?:background|wallpaper|theme-background|bg-image)[a-z0-9-]*)\s*:\s*[^;]*url\(\s*(['"]?)(https?:\/\/[^'")\s]+|vencord:\/\/[^'")\s]+)\2\s*\)/gi;
     for (const m of css.matchAll(varRe)) {
         const remoteOrLocal = m[3];
-        if (remoteOrLocal.startsWith("vencord://")) {
+        if (remoteOrLocal.startsWith("vencord://") || remoteOrLocal.startsWith("nexora://")) {
             varBg.push(remoteOrLocal);
         } else {
             const local = localByRemote.get(remoteOrLocal);
@@ -153,7 +153,7 @@ function isOpaqueWallpaperTheme(css: string) {
  */
 function expandLegacyAppWallpaperRules(css: string): string {
     return css.replace(
-        /(#app-mount\s+)?\.app__[a-zA-Z0-9]+\s*\{([^{}]*url\(\s*['"]?(?:https?:|vencord:)[^)]+\)[^{}]*)\}/gi,
+        /(#app-mount\s+)?\.app__[a-zA-Z0-9]+\s*\{([^{}]*url\(\s*['"]?(?:https?:|vencord:|nexora:)[^)]+\)[^{}]*)\}/gi,
         (_full, _mount, body: string) =>
             `.app__160d8, #app-mount, body, [class*="app_"], [class*="bg_"], [class*="appMount_"] {${body}}`
     );
@@ -347,7 +347,7 @@ body,
 }
 
 /**
- * Rewrite remote url(...) images in theme CSS to vencord:///themes/.image-cache/...
+ * Rewrite remote url(...) images in theme CSS to nexora:///themes/.image-cache/...
  * inline @imports, and expand outdated Discord class selectors so wallpapers show in servers.
  */
 export async function localizeThemeCssImages(css: string): Promise<string> {
@@ -366,7 +366,7 @@ export async function localizeThemeCssImages(css: string): Promise<string> {
         try {
             const fileName = await ensureCached(url);
             if (!fileName) continue;
-            const local = `vencord:///themes/${CACHE_DIR_NAME}/${fileName}`;
+            const local = `nexora:///themes/${CACHE_DIR_NAME}/${fileName}`;
             out = out.split(url).join(local);
             localByRemote.set(url, local);
         } catch (err) {

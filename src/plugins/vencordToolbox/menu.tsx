@@ -211,11 +211,6 @@ export function buildThemeMenuEntries() {
                 }}
             />
             <Menu.MenuItem
-                id="edit-quickcss"
-                label="Edit QuickCSS"
-                action={() => VencordNative.quickCss.openEditor()}
-            />
-            <Menu.MenuItem
                 id="manage-themes"
                 label="Manage Themes"
                 action={() => openSettingsTabModal(ThemesTab)}

@@ -60,6 +60,8 @@ const SkipPrev = Svg("M7 6c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1s-1-.45-1-1V7c0-.55
 const SkipNext = Svg("M7.58 16.89l5.77-4.07c.56-.4.56-1.24 0-1.63L7.58 7.11C6.91 6.65 6 7.12 6 7.93v8.14c0 .81.91 1.28 1.58.82zM16 7v10c0 .55.45 1 1 1s1-.45 1-1V7c0-.55-.45-1-1-1s-1 .45-1 1z", "next");
 const Repeat = Svg("M7 7h10v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.2.2-.51 0-.71l-2.79-2.79c-.31-.31-.85-.09-.85.36V5H6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1s1-.45 1-1V7zm10 10H7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79c.31.31.85.09.85-.36V19h11c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1s-1 .45-1 1v3z", "repeat");
 const Shuffle = Svg("M10.59 9.17L6.12 4.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l4.46 4.46 1.42-1.4zm4.76-4.32l1.19 1.19L4.7 17.88c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L17.96 7.46l1.19 1.19c.31.31.85.09.85-.36V4.5c0-.28-.22-.5-.5-.5h-3.79c-.45 0-.67.54-.36.85zm-.52 8.56l-1.41 1.41 3.13 3.13-1.2 1.2c-.31.31-.09.85.36.85h3.79c.28 0 .5-.22.5-.5v-3.79c0-.45-.54-.67-.85-.35l-1.19 1.19-3.13-3.14z", "shuffle");
+const VolumeIcon = Svg("M3 10v4c0 .55.45 1 1 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71V6.41c0-.89-1.08-1.34-1.71-.71L7 9H4c-.55 0-1 .45-1 1zm13.5 2A4.5 4.5 0 0 0 14 8.18v7.64c1.76-.92 3-2.82 3-4.82zM14 4.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z", "volume");
+const VolumeMutedIcon = Svg("M16.5 12A4.5 4.5 0 0 0 14 8.18v2.06c.87.39 1.5 1.26 1.5 2.26s-.63 1.87-1.5 2.26v2.06c1.79-.73 3-2.49 3-4.52zM3.63 3.63a.996.996 0 0 0 0 1.41L7.29 9H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71v-4.17l4.18 4.18c-.49.37-1.02.68-1.6.91v2.06a8.94 8.94 0 0 0 3.26-1.36l1.92 1.92a.996.996 0 1 0 1.41-1.41L5.05 3.63c-.39-.39-1.02-.39-1.42 0zM12 5.83v2.87l2 2V6.41c0-.89-1.08-1.34-1.71-.71L12 5.83z", "volume-muted");
 
 function Button(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
     return (
@@ -101,6 +103,56 @@ function CopyContextMenu({ name, type, path }: { type: string; name: string; pat
                 leadingAccessory={{ type: "icon", icon: OpenExternalIcon }}
             />
         </Menu.Menu>
+    );
+}
+
+function VolumeControl() {
+    const [storeVolume, muted] = useStateFromStores(
+        [SpotifyStore],
+        () => [SpotifyStore.volume, SpotifyStore.muted]
+    );
+    const [value, setValue] = useState(storeVolume);
+
+    useEffect(() => {
+        setValue(storeVolume);
+    }, [storeVolume]);
+
+    const isMuted = muted || value === 0;
+
+    return (
+        <div className={cl("volume")} title={isMuted ? "Unmute" : `Mute · ${Math.round(value)}%`}>
+            <Button
+                className={classes(cl("button"), cl("volume-btn"), isMuted && cl("volume-muted"))}
+                aria-label={isMuted ? "Unmute" : "Mute"}
+                aria-pressed={isMuted}
+                tabIndex={0}
+                type="button"
+                onClick={e => {
+                    SpotifyStore.toggleMute();
+                    // Drop focus so the slider doesn’t stick open after click
+                    (e.currentTarget as HTMLButtonElement).blur();
+                }}
+            >
+                {isMuted ? <VolumeMutedIcon /> : <VolumeIcon />}
+            </Button>
+            {/* Inline beside icon so hover never drops when moving onto the slider */}
+            <div className={cl("volume-slider-wrap")}>
+                <input
+                    type="range"
+                    className={cl("volume-slider")}
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={value}
+                    aria-label="Spotify volume"
+                    onChange={e => {
+                        const v = Number(e.currentTarget.value);
+                        setValue(v);
+                        SpotifyStore.setVolume(v);
+                    }}
+                />
+            </div>
+        </div>
     );
 }
 
@@ -147,6 +199,7 @@ function Controls() {
                 {repeat === "track" && <span className={cl("repeat-1")}>1</span>}
                 <Repeat />
             </Button>
+            <VolumeControl />
         </Flex>
     );
 }
@@ -365,11 +418,16 @@ function UpcomingQueue() {
             {queue.map((item: QueueTrack, i) => (
                 <div
                     key={`${item.id}-${i}`}
-                    className={cl("queue-item")}
-                    title={`${item.name} — ${item.artists}`}
-                    onClick={() => {
-                        if (item.uri?.startsWith("spotify:track:"))
-                            SpotifyStore.openExternal(`/track/${item.id}`);
+                    className={classes(cl("queue-item"), cl("queue-item-playable"))}
+                    role="button"
+                    tabIndex={0}
+                    title={`Play ${item.name}`}
+                    onClick={() => void SpotifyStore.playQueueItem(item, i)}
+                    onKeyDown={e => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            void SpotifyStore.playQueueItem(item, i);
+                        }
                     }}
                 >
                     {item.imageUrl ? (
@@ -407,17 +465,17 @@ export function Player() {
     );
 
     const isPlaying = useStateFromStores([SpotifyStore], () => SpotifyStore.isPlaying);
+    const keepWhenPaused = settings.use(["keepPlayerWhenPaused"]).keepPlayerWhenPaused;
     const [shouldHide, setShouldHide] = useState(false);
 
-    // Hide player after 5 minutes of inactivity
-
+    // Optionally hide after 5 minutes paused (off by default via keepPlayerWhenPaused)
     React.useEffect(() => {
         setShouldHide(false);
-        if (!isPlaying) {
+        if (!isPlaying && !keepWhenPaused) {
             const timeout = setTimeout(() => setShouldHide(true), 1000 * 60 * 5);
             return () => clearTimeout(timeout);
         }
-    }, [isPlaying]);
+    }, [isPlaying, keepWhenPaused]);
 
     if (!track || !device?.is_active || shouldHide)
         return null;

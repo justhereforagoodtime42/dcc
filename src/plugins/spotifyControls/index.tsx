@@ -58,15 +58,14 @@ export const settings = definePluginSettings({
     },
     showUpcomingQueue: {
         type: OptionType.BOOLEAN,
-        description: "Show the next few upcoming songs from your Spotify queue under the player",
+        description: "Show the next song from your Spotify queue under the player",
         default: true,
         onChange: () => SpotifyStore.fetchQueue()
     },
-    upcomingQueueCount: {
-        type: OptionType.NUMBER,
-        description: "How many upcoming songs to show (1–10)",
-        default: 1,
-        onChange: () => SpotifyStore.fetchQueue()
+    keepPlayerWhenPaused: {
+        type: OptionType.BOOLEAN,
+        description: "Keep the Spotify player visible while paused",
+        default: true
     }
 });
 
@@ -78,7 +77,8 @@ export default definePlugin({
     name: "SpotifyControls",
     description: "Adds a Spotify player above the account panel, with optional no auto-pause in voice",
     tags: ["Media", "Activity"],
-    authors: [Devs.Ven, Devs.afn, Devs.KraXen72, Devs.Av32000, Devs.nin0dev, Devs.Cyn, Devs.Nuckyz, AcidicReturns],
+    // AcidicReturns first — modal only shows ~6 authors
+    authors: [AcidicReturns, Devs.Ven, Devs.afn, Devs.KraXen72, Devs.Av32000, Devs.nin0dev, Devs.Cyn, Devs.Nuckyz],
     settings,
     patches: [
         {

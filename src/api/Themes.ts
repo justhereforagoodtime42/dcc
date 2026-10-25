@@ -85,7 +85,7 @@ async function initThemes() {
         previousThemeBlobObjectURLs = objectUrls.filter(isNonNullish);
         links.push(...previousThemeBlobObjectURLs);
     } else {
-        const localThemes = enabledThemes.map(theme => `vencord:///themes/${theme}?v=${Date.now()}`);
+        const localThemes = enabledThemes.map(theme => `nexora:///themes/${theme}?v=${Date.now()}`);
         links.push(...localThemes);
     }
 
