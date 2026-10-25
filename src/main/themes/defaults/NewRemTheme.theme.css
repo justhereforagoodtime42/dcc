@@ -12,7 +12,7 @@ body,
 [class*="app_"],
 [class*="bg_"],
 [class*="appMount_"] {
-    background-image: url(nexora:///themes/.image-cache/3571491d4538d26bc63a.jpg) !important;
+    background-image: url(vencord:///themes/.image-cache/3571491d4538d26bc63a.jpg) !important;
     background-size: cover !important;
     background-position: center center !important;
     background-attachment: fixed !important;

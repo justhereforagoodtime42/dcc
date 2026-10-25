@@ -104,7 +104,10 @@ function pickWallpaperUrls(css: string, localByRemote: Map<string, string>): str
     for (const m of css.matchAll(varRe)) {
         const remoteOrLocal = m[3];
         if (remoteOrLocal.startsWith("vencord://") || remoteOrLocal.startsWith("nexora://")) {
-            varBg.push(remoteOrLocal);
+            // Accept either; we rewrite new cache URLs as vencord:// below
+            varBg.push(remoteOrLocal.startsWith("nexora://")
+                ? remoteOrLocal.replace(/^nexora:\/\//, "vencord://")
+                : remoteOrLocal);
         } else {
             const local = localByRemote.get(remoteOrLocal);
             if (local) varBg.push(local);
@@ -347,7 +350,7 @@ body,
 }
 
 /**
- * Rewrite remote url(...) images in theme CSS to nexora:///themes/.image-cache/...
+ * Rewrite remote url(...) images in theme CSS to vencord:///themes/.image-cache/...
  * inline @imports, and expand outdated Discord class selectors so wallpapers show in servers.
  */
 export async function localizeThemeCssImages(css: string): Promise<string> {
@@ -366,7 +369,7 @@ export async function localizeThemeCssImages(css: string): Promise<string> {
         try {
             const fileName = await ensureCached(url);
             if (!fileName) continue;
-            const local = `nexora:///themes/${CACHE_DIR_NAME}/${fileName}`;
+            const local = `vencord:///themes/${CACHE_DIR_NAME}/${fileName}`;
             out = out.split(url).join(local);
             localByRemote.set(url, local);
         } catch (err) {

@@ -30,25 +30,11 @@ import { IS_VANILLA, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
 import { installExt } from "./utils/extensions";
 
-// Must run before app ready so nexora:// theme URLs work in the renderer
-try {
-    protocol.registerSchemesAsPrivileged([
-        {
-            scheme: "nexora",
-            privileges: { standard: true, supportFetchAPI: true, bypassCSP: true, stream: true, corsEnabled: true }
-        },
-        {
-            scheme: "vencord",
-            privileges: { standard: true, supportFetchAPI: true, bypassCSP: true, stream: true, corsEnabled: true }
-        },
-    ]);
-} catch { /* already registered / too late — handlers below still work for vencord */ }
-
 if (IS_VESKTOP || !IS_VANILLA) {
     app.whenReady().then(() => {
-        const serveNexoraProtocol = async ({ url: unsafeUrl }: { url: string; }) => {
-            const scheme = unsafeUrl.startsWith("nexora:") ? "nexora://" : "vencord://";
-            let url = decodeURI(unsafeUrl).slice(scheme.length).replace(/\?v=\d+$/, "");
+        // Theme CSS + wallpapers use vencord:// (Discord Electron allows it). nexora:// broke backgrounds.
+        protocol.handle("vencord", async ({ url: unsafeUrl }) => {
+            let url = decodeURI(unsafeUrl).slice("vencord://".length).replace(/\?v=\d+$/, "");
 
             if (url.endsWith("/")) url = url.slice(0, -1);
 
@@ -94,11 +80,7 @@ if (IS_VESKTOP || !IS_VANILLA) {
                         status: 404
                     });
             }
-        };
-
-        // nexora:// is the public scheme; keep vencord:// so older cached theme CSS still loads
-        protocol.handle("nexora", serveNexoraProtocol);
-        protocol.handle("vencord", serveNexoraProtocol);
+        });
 
         try {
             if (RendererSettings.store.enableReactDevtools)

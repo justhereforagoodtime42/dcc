@@ -85,7 +85,8 @@ async function initThemes() {
         previousThemeBlobObjectURLs = objectUrls.filter(isNonNullish);
         links.push(...previousThemeBlobObjectURLs);
     } else {
-        const localThemes = enabledThemes.map(theme => `nexora:///themes/${theme}?v=${Date.now()}`);
+        // Must stay vencord:// — Discord’s Electron stack already allows that scheme; nexora:// breaks wallpapers
+        const localThemes = enabledThemes.map(theme => `vencord:///themes/${theme}?v=${Date.now()}`);
         links.push(...localThemes);
     }
 
