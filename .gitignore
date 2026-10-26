@@ -24,5 +24,6 @@ src/userplugins
 ExtensionCache/
 /settings
 
-themes/
+# Runtime user themes next to the repo (not src/main/themes defaults)
+/themes/
 
