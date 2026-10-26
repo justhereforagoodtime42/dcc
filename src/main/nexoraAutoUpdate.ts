@@ -21,7 +21,9 @@ import { tmpdir } from "os";
 const REPO = "justhereforagoodtime42/dcc";
 const RELEASE_TAG = "nexora-latest";
 const RELEASE_API = `https://api.github.com/repos/${REPO}/releases/tags/${RELEASE_TAG}`;
+const ZIP_URL = `https://github.com/${REPO}/releases/download/${RELEASE_TAG}/Nexora-Windows.zip`;
 const BUILD_ID_FILE = ".nexora-release-id";
+const BUILD_META_FILE = ".nexora-release-meta.json";
 
 function installRoot(): string {
     // patcher.js lives in <install>/dist — __dirname is that dist folder
@@ -30,9 +32,11 @@ function installRoot(): string {
 
 function isNexoraClientInstall() {
     const root = installRoot();
-    if (!existsSync(join(root, "dist", "patcher.js"))) return false;
+    if (!existsSync(join(root, "dist", "patcher.js")) && !existsSync(join(__dirname, "patcher.js")))
+        return false;
     const norm = root.replace(/\\/g, "/").toLowerCase();
-    return norm.includes("/nexoraclient") || existsSync(join(__dirname, BUILD_ID_FILE));
+    // LocalAppData\NexoraClient or stamped release builds
+    return norm.includes("nexoraclient") || existsSync(join(__dirname, BUILD_ID_FILE)) || existsSync(join(__dirname, BUILD_META_FILE));
 }
 
 function localBuildId(): string {
@@ -43,11 +47,38 @@ function localBuildId(): string {
     }
 }
 
+function localBuildMeta(): { id: string; assetUpdatedAt: string; } {
+    try {
+        const raw = readFileSync(join(__dirname, BUILD_META_FILE), "utf-8");
+        const j = JSON.parse(raw);
+        return { id: String(j.id || ""), assetUpdatedAt: String(j.assetUpdatedAt || "") };
+    } catch {
+        return { id: localBuildId(), assetUpdatedAt: "" };
+    }
+}
+
+function writeBuildStamp(id: string, assetUpdatedAt: string) {
+    writeFileSync(join(__dirname, BUILD_ID_FILE), id, "utf-8");
+    writeFileSync(
+        join(__dirname, BUILD_META_FILE),
+        JSON.stringify({ id, assetUpdatedAt, updatedAt: new Date().toISOString() }, null, 2),
+        "utf-8"
+    );
+}
+
+/** Short SHAs from git / release titles can differ in length (7 vs 8+). */
+function sameCommit(a: string, b: string) {
+    if (!a || !b) return false;
+    if (a === b) return true;
+    return a.startsWith(b) || b.startsWith(a);
+}
+
 async function fetchJson(url: string): Promise<any> {
     const res = await net.fetch(url, {
         headers: {
             "User-Agent": "NexoraAutoUpdate",
             Accept: "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
         },
     } as any);
     if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
@@ -56,8 +87,9 @@ async function fetchJson(url: string): Promise<any> {
 
 async function downloadToFile(url: string, dest: string) {
     const res = await net.fetch(url, {
-        headers: { "User-Agent": "NexoraAutoUpdate" },
+        headers: { "User-Agent": "NexoraAutoUpdate", Accept: "application/octet-stream" },
         bypassCustomProtocolHandlers: true,
+        redirect: "follow",
     } as any);
     if (!res.ok) throw new Error(`Download failed ${res.status}: ${url}`);
     writeFileSync(dest, Buffer.from(await res.arrayBuffer()));
@@ -90,10 +122,26 @@ function findDistInExtract(extractedRoot: string): string | null {
 
     for (const name of readdirSync(extractedRoot)) {
         const nested = join(extractedRoot, name);
-        if (existsSync(join(nested, "patcher.js"))) return nested;
-        if (existsSync(join(nested, "dist", "patcher.js"))) return join(nested, "dist");
+        try {
+            if (existsSync(join(nested, "patcher.js"))) return nested;
+            if (existsSync(join(nested, "dist", "patcher.js"))) return join(nested, "dist");
+        } catch { /* ignore */ }
     }
     return null;
+}
+
+async function notify(title: string, message: string) {
+    try {
+        const win = BrowserWindow.getAllWindows()[0];
+        const opts = {
+            type: "info" as const,
+            title,
+            message,
+            buttons: ["OK"],
+        };
+        if (win) await dialog.showMessageBox(win, opts);
+        else await dialog.showMessageBox(opts);
+    } catch { /* early boot / no window yet */ }
 }
 
 /**
@@ -102,32 +150,44 @@ function findDistInExtract(extractedRoot: string): string | null {
  */
 export async function maybeAutoUpdateNexora(): Promise<void> {
     if (process.platform !== "win32") return;
-    if (!isNexoraClientInstall()) return;
+    if (!isNexoraClientInstall()) {
+        console.info("[Nexora] Auto-update: skipped (not a NexoraClient install)");
+        return;
+    }
 
     try {
         const release = await fetchJson(RELEASE_API);
         const fromTitle = /Nexora latest \(([0-9a-f]{7,40})\)/i.exec(String(release.name || ""));
-        const wanted = (fromTitle?.[1] || String(release.target_commitish || release.id || "")).slice(0, 40);
-        const have = localBuildId();
-
-        if (have && wanted && have === wanted) {
-            console.info("[Nexora] Auto-update: already up to date", have);
-            return;
-        }
-
+        const wanted = (fromTitle?.[1] || String(release.target_commitish || "")).trim();
         const asset = (release.assets || []).find((a: any) => a.name === "Nexora-Windows.zip");
-        if (!asset?.browser_download_url) {
-            console.warn("[Nexora] Auto-update: no Nexora-Windows.zip on release");
+        const assetUpdatedAt = String(asset?.updated_at || release.published_at || "");
+        const have = localBuildMeta();
+
+        if (
+            wanted
+            && sameCommit(have.id, wanted)
+            && have.assetUpdatedAt
+            && have.assetUpdatedAt === assetUpdatedAt
+        ) {
+            console.info("[Nexora] Auto-update: already up to date", have.id, have.assetUpdatedAt);
             return;
         }
 
-        console.info("[Nexora] Auto-update: downloading", wanted, "(have:", have || "none", ")");
+        // Also treat matching commit with empty meta as up to date only if asset times match after first update
+        if (wanted && sameCommit(have.id, wanted) && !assetUpdatedAt) {
+            console.info("[Nexora] Auto-update: already up to date", have.id);
+            return;
+        }
+
+        const downloadUrl = asset?.browser_download_url || ZIP_URL;
+        console.info("[Nexora] Auto-update: downloading", wanted || "latest", "(have:", have.id || "none", ")");
+
         const tmp = join(tmpdir(), `nexora-update-${Date.now()}`);
         mkdirSync(tmp, { recursive: true });
         const zip = join(tmp, "Nexora-Windows.zip");
         const extractTo = join(tmp, "out");
 
-        await downloadToFile(asset.browser_download_url, zip);
+        await downloadToFile(downloadUrl, zip);
         extractZipWindows(zip, extractTo);
 
         const srcDist = findDistInExtract(extractTo);
@@ -136,25 +196,19 @@ export async function maybeAutoUpdateNexora(): Promise<void> {
         mkdirSync(__dirname, { recursive: true });
         cpSync(srcDist, __dirname, { recursive: true });
 
-        if (wanted) {
-            writeFileSync(join(__dirname, BUILD_ID_FILE), wanted, "utf-8");
-        }
+        const stampedId = wanted || localBuildId() || "unknown";
+        writeBuildStamp(stampedId, assetUpdatedAt);
 
         console.info("[Nexora] Auto-update applied. Restart Discord to finish.");
-        try {
-            const win = BrowserWindow.getAllWindows()[0];
-            const opts = {
-                type: "info" as const,
-                title: "Nexora updated",
-                message: "Nexora downloaded an update. Restart Discord to use it.",
-                buttons: ["OK"],
-            };
-            if (win) await dialog.showMessageBox(win, opts);
-            else await dialog.showMessageBox(opts);
-        } catch { /* early boot / no window yet */ }
+        await notify(
+            "Nexora updated",
+            "Nexora downloaded an update. Fully quit Discord (tray too), then open it again to finish."
+        );
 
         try { rmSync(tmp, { recursive: true, force: true }); } catch { /* ignore */ }
     } catch (err) {
         console.error("[Nexora] Auto-update failed", err);
+        // Don't spam every launch with a modal on transient errors — log is enough.
+        // Friends without auto-update in their build never reach here; they must re-run the installer.
     }
 }

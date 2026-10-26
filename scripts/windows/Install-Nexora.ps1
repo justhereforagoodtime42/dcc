@@ -125,6 +125,24 @@ try {
     Write-Step "Extracting to $InstallRoot…"
     Expand-NexoraZip $zip $InstallRoot
 
+    # Stamp release id so auto-update can detect future builds (and works even if zip stamp is missing)
+    try {
+        $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/tags/$ReleaseTag" -Headers @{
+            "User-Agent" = "NexoraInstaller"
+            "Accept"     = "application/vnd.github+json"
+        }
+        $id = if ($rel.name -match 'Nexora latest \(([0-9a-f]{7,40})\)') { $Matches[1] } else { "latest" }
+        $asset = @($rel.assets | Where-Object { $_.name -eq "Nexora-Windows.zip" }) | Select-Object -First 1
+        $updated = if ($asset) { [string]$asset.updated_at } else { "" }
+        $dist = Join-Path $InstallRoot "dist"
+        Set-Content -Path (Join-Path $dist ".nexora-release-id") -Value $id -NoNewline
+        @{ id = $id; assetUpdatedAt = $updated; updatedAt = (Get-Date).ToUniversalTime().ToString("o") } |
+            ConvertTo-Json | Set-Content -Path (Join-Path $dist ".nexora-release-meta.json")
+        Write-Host "    Stamped build $id"
+    } catch {
+        Write-Host "    Warning: could not stamp release id ($($_.Exception.Message))" -ForegroundColor Yellow
+    }
+
     Write-Step "Downloading Vencord Installer CLI…"
     $cli = Get-InstallerCli $InstallRoot
 
@@ -136,8 +154,9 @@ try {
     Write-Host "Bundled themes land in %AppData%\Nexora\themes on first launch."
     Write-Host "Keep this folder: $InstallRoot (Discord loads Nexora from here)."
     Write-Host ""
-    Write-Host "Later: restart Discord to pick up Nexora updates automatically."
-    Write-Host "If Discord itself updates and breaks the patch, run this installer again."
+    Write-Host "Later: open Discord to download updates, then fully quit and reopen once more."
+    Write-Host "If updates never appear, re-run this installer (one line below)."
+    Write-Host "  irm https://github.com/$Repo/releases/download/$ReleaseTag/Install-Nexora.ps1 | iex"
 }
 catch {
     Write-Host ""
