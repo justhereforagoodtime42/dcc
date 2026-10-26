@@ -16,9 +16,92 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { existsSync, renameSync } from "fs";
+import {
+    cpSync,
+    existsSync,
+    mkdirSync,
+    readdirSync,
+    renameSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from "fs";
 import { app } from "electron";
 import { join } from "path";
+
+const MIGRATED_STAMP = ".nexora-migrated-from-vencord";
+
+/** Copy legacy files into dest without clobbering newer Nexora files. */
+function mergeDir(src: string, dest: string) {
+    if (!existsSync(src)) return;
+    mkdirSync(dest, { recursive: true });
+
+    for (const name of readdirSync(src)) {
+        const from = join(src, name);
+        const to = join(dest, name);
+        let st;
+        try {
+            st = statSync(from);
+        } catch {
+            continue;
+        }
+
+        if (st.isDirectory()) {
+            mergeDir(from, to);
+            continue;
+        }
+
+        if (!existsSync(to)) {
+            cpSync(from, to);
+            continue;
+        }
+
+        // settings.json / quickCss: keep whichever file is newer
+        try {
+            const toSt = statSync(to);
+            if (st.mtimeMs > toSt.mtimeMs) {
+                cpSync(from, to);
+            }
+        } catch { /* keep dest */ }
+    }
+}
+
+/**
+ * Prefer %AppData%/Nexora. If an old %AppData%/Vencord folder still exists,
+ * merge it in (don't wipe Nexora), then remove Vencord so settings stop splitting.
+ */
+function migrateVencordIntoNexora(nexora: string, legacy: string) {
+    if (!existsSync(legacy)) return;
+
+    try {
+        if (!existsSync(nexora)) {
+            renameSync(legacy, nexora);
+            console.info("[Nexora] Renamed data folder Vencord → Nexora");
+            return;
+        }
+
+        const stamp = join(nexora, MIGRATED_STAMP);
+        if (existsSync(stamp)) {
+            // Already merged once; drop leftover Vencord if still present
+            try { rmSync(legacy, { recursive: true, force: true }); } catch { /* ignore */ }
+            return;
+        }
+
+        console.info("[Nexora] Merging leftover Vencord data into Nexora…");
+        mergeDir(legacy, nexora);
+        mkdirSync(nexora, { recursive: true });
+        writeFileSync(stamp, new Date().toISOString(), "utf-8");
+
+        try {
+            rmSync(legacy, { recursive: true, force: true });
+            console.info("[Nexora] Removed old Vencord data folder after merge");
+        } catch (err) {
+            console.warn("[Nexora] Could not delete old Vencord folder (close Discord / retry)", err);
+        }
+    } catch (err) {
+        console.error("[Nexora] Failed to migrate Vencord → Nexora", err);
+    }
+}
 
 function resolveDataDir() {
     if (process.env.NEXORA_USER_DATA_DIR || process.env.VENCORD_USER_DATA_DIR) {
@@ -33,15 +116,7 @@ function resolveDataDir() {
     const nexora = join(parent, "Nexora");
     const legacy = join(parent, "Vencord");
 
-    // One-time migrate %AppData%/Vencord → %AppData%/Nexora so themes/settings keep working
-    try {
-        if (!existsSync(nexora) && existsSync(legacy)) {
-            renameSync(legacy, nexora);
-            console.info("[Nexora] Migrated data folder Vencord → Nexora");
-        }
-    } catch (err) {
-        console.error("[Nexora] Failed to migrate data folder; using Nexora path", err);
-    }
+    migrateVencordIntoNexora(nexora, legacy);
 
     return nexora;
 }
