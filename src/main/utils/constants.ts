@@ -30,6 +30,7 @@ import { app } from "electron";
 import { join } from "path";
 
 const MIGRATED_STAMP = ".nexora-migrated-from-vencord";
+const CHECKOUT_STAMP = ".nexora-migrated-from-checkout";
 
 /** Copy legacy files into dest without clobbering newer Nexora files. */
 function mergeDir(src: string, dest: string) {
@@ -56,7 +57,6 @@ function mergeDir(src: string, dest: string) {
             continue;
         }
 
-        // settings.json / quickCss: keep whichever file is newer
         try {
             const toSt = statSync(to);
             if (st.mtimeMs > toSt.mtimeMs) {
@@ -66,46 +66,63 @@ function mergeDir(src: string, dest: string) {
     }
 }
 
-/**
- * Prefer %AppData%/Nexora. If an old %AppData%/Vencord folder still exists,
- * merge it in (don't wipe Nexora), then remove Vencord so settings stop splitting.
- */
-function migrateVencordIntoNexora(nexora: string, legacy: string) {
+/** Git clone / pnpm inject root — never use as the live settings/themes folder. */
+function isSourceCheckout(dir: string) {
+    try {
+        return existsSync(join(dir, "pnpm-workspace.yaml"))
+            || existsSync(join(dir, "src", "main", "patcher.ts"))
+            || existsSync(join(dir, "src", "main", "ipcMain.ts"));
+    } catch {
+        return false;
+    }
+}
+
+function migrateIntoNexora(nexora: string, legacy: string, stampName: string, label: string) {
     if (!existsSync(legacy)) return;
 
     try {
         if (!existsSync(nexora)) {
-            renameSync(legacy, nexora);
-            console.info("[Nexora] Renamed data folder Vencord → Nexora");
-            return;
+            // Only rename when legacy is a pure data folder (not the git repo)
+            if (!isSourceCheckout(legacy)) {
+                renameSync(legacy, nexora);
+                console.info(`[Nexora] Renamed data folder ${label} → Nexora`);
+                return;
+            }
         }
 
-        const stamp = join(nexora, MIGRATED_STAMP);
-        if (existsSync(stamp)) {
-            // Already merged once; drop leftover Vencord if still present
+        const stamp = join(nexora, stampName);
+        if (existsSync(stamp) && !isSourceCheckout(legacy)) {
             try { rmSync(legacy, { recursive: true, force: true }); } catch { /* ignore */ }
             return;
         }
 
-        console.info("[Nexora] Merging leftover Vencord data into Nexora…");
-        mergeDir(legacy, nexora);
+        console.info(`[Nexora] Merging ${label} data into %AppData%/Nexora…`);
         mkdirSync(nexora, { recursive: true });
-        writeFileSync(stamp, new Date().toISOString(), "utf-8");
-
-        try {
-            rmSync(legacy, { recursive: true, force: true });
-            console.info("[Nexora] Removed old Vencord data folder after merge");
-        } catch (err) {
-            console.warn("[Nexora] Could not delete old Vencord folder (close Discord / retry)", err);
+        // Source checkout: only merge settings/ + themes/, never the whole repo
+        if (isSourceCheckout(legacy)) {
+            mergeDir(join(legacy, "settings"), join(nexora, "settings"));
+            mergeDir(join(legacy, "themes"), join(nexora, "themes"));
+        } else {
+            mergeDir(legacy, nexora);
+            try { rmSync(legacy, { recursive: true, force: true }); } catch { /* ignore */ }
         }
+        writeFileSync(stamp, new Date().toISOString(), "utf-8");
     } catch (err) {
-        console.error("[Nexora] Failed to migrate Vencord → Nexora", err);
+        console.error(`[Nexora] Failed to migrate ${label} → Nexora`, err);
     }
 }
 
 function resolveDataDir() {
-    if (process.env.NEXORA_USER_DATA_DIR || process.env.VENCORD_USER_DATA_DIR) {
-        return process.env.NEXORA_USER_DATA_DIR || process.env.VENCORD_USER_DATA_DIR!;
+    // Explicit Nexora override only (portable / tests)
+    if (process.env.NEXORA_USER_DATA_DIR) {
+        return process.env.NEXORA_USER_DATA_DIR;
+    }
+
+    // Dev inject sets VENCORD_USER_DATA_DIR to the git repo so the installer finds dist/.
+    // That must NOT become the themes/settings folder — always use %AppData%/Nexora.
+    const vencordEnv = process.env.VENCORD_USER_DATA_DIR;
+    if (vencordEnv && !isSourceCheckout(vencordEnv)) {
+        return vencordEnv;
     }
 
     if (process.env.DISCORD_USER_DATA_DIR) {
@@ -114,9 +131,14 @@ function resolveDataDir() {
 
     const parent = join(app.getPath("userData"), "..");
     const nexora = join(parent, "Nexora");
-    const legacy = join(parent, "Vencord");
+    const legacyVencord = join(parent, "Vencord");
 
-    migrateVencordIntoNexora(nexora, legacy);
+    migrateIntoNexora(nexora, legacyVencord, MIGRATED_STAMP, "Vencord");
+
+    // Pull settings/themes out of a mistaken repo-root data dir (dev inject)
+    if (vencordEnv && isSourceCheckout(vencordEnv)) {
+        migrateIntoNexora(nexora, vencordEnv, CHECKOUT_STAMP, "git-checkout");
+    }
 
     return nexora;
 }

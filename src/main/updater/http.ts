@@ -19,8 +19,11 @@
 import { fetchBuffer, fetchJson } from "@main/utils/http";
 import { IpcEvents } from "@shared/IpcEvents";
 import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
+import { execFileSync } from "child_process";
 import { ipcMain } from "electron";
+import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import { writeFile } from "fs/promises";
+import { tmpdir } from "os";
 import { join } from "path";
 
 import gitHash from "~git-hash";
@@ -31,7 +34,10 @@ import { serializeErrors, VENCORD_FILES } from "./common";
 const API_BASE = `https://api.github.com/repos/${gitRemote}`;
 /** Rolling Nexora one-click release (also marked latest). */
 const RELEASE_ENDPOINT = "/releases/latest";
+const THEMES_ZIP = "themes-defaults.zip";
+
 let PendingUpdates = [] as [string, string][];
+let PendingThemesZip: string | null = null;
 
 async function githubGet<T = any>(endpoint: string) {
     return fetchJson<T>(API_BASE + endpoint, {
@@ -48,6 +54,27 @@ async function githubGet<T = any>(endpoint: string) {
 function hashFromReleaseName(name: string) {
     const m = /([0-9a-f]{7,40})\)?\s*$/i.exec(String(name || "").trim());
     return m?.[1]?.toLowerCase() ?? "";
+}
+
+function extractZipWindows(zipPath: string, destDir: string) {
+    const ps = `
+$ErrorActionPreference = 'Stop'
+$zip = '${zipPath.replace(/'/g, "''")}'
+$dest = '${destDir.replace(/'/g, "''")}'
+if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
+New-Item -ItemType Directory -Force -Path $dest | Out-Null
+Expand-Archive -Path $zip -DestinationPath $dest -Force
+`;
+    const script = join(tmpdir(), `nexora-themes-${Date.now()}.ps1`);
+    writeFileSync(script, ps, "utf-8");
+    try {
+        execFileSync("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script], {
+            stdio: "ignore",
+            windowsHide: true,
+        });
+    } finally {
+        try { rmSync(script, { force: true }); } catch { /* ignore */ }
+    }
 }
 
 async function calculateGitChanges() {
@@ -72,7 +99,12 @@ async function fetchUpdates() {
         return false;
 
     PendingUpdates = [];
+    PendingThemesZip = null;
     data.assets.forEach(({ name, browser_download_url }) => {
+        if (name === THEMES_ZIP) {
+            PendingThemesZip = browser_download_url;
+            return;
+        }
         if (VENCORD_FILES.some(s => name === s || name.startsWith(s))) {
             PendingUpdates.push([name, browser_download_url]);
         }
@@ -94,7 +126,33 @@ async function applyUpdates() {
         writeFile(filename, contents))
     );
 
+    if (PendingThemesZip) {
+        try {
+            const buf = await fetchBuffer(PendingThemesZip);
+            const zipPath = join(tmpdir(), `nexora-${THEMES_ZIP}`);
+            writeFileSync(zipPath, Buffer.from(buf));
+            const extractTo = join(tmpdir(), `nexora-themes-out-${Date.now()}`);
+            extractZipWindows(zipPath, extractTo);
+            // zip root is "themes/" (contains defaults/)
+            const srcThemes = join(extractTo, "themes");
+            const destThemes = join(__dirname, "themes");
+            mkdirSync(destThemes, { recursive: true });
+            if (existsSync(srcThemes)) {
+                cpSync(srcThemes, destThemes, { recursive: true });
+            } else if (existsSync(join(extractTo, "defaults"))) {
+                mkdirSync(join(destThemes, "defaults"), { recursive: true });
+                cpSync(join(extractTo, "defaults"), join(destThemes, "defaults"), { recursive: true });
+            }
+            try { rmSync(zipPath, { force: true }); } catch { /* ignore */ }
+            try { rmSync(extractTo, { recursive: true, force: true }); } catch { /* ignore */ }
+            console.info("[Nexora] Updated bundled default themes");
+        } catch (err) {
+            console.error("[Nexora] Failed to apply themes-defaults.zip", err);
+        }
+    }
+
     PendingUpdates = [];
+    PendingThemesZip = null;
     return true;
 }
 

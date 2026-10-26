@@ -60,6 +60,12 @@ jobs:
           # Flat copies for Vencord HTTP updater (downloads these by name into dist/)
           cp dist/patcher.js dist/preload.js dist/renderer.js dist/renderer.css .
           cp scripts/windows/Install-Nexora.ps1 scripts/windows/Uninstall-Nexora.ps1 scripts/windows/Install-Nexora.bat .
+          # Bundled themes for HTTP updater (seedDefaultThemes reads dist/themes/defaults)
+          if [ -d dist/themes ]; then
+            rm -f themes-defaults.zip
+            (cd dist && zip -r ../themes-defaults.zip themes)
+            ls -lh themes-defaults.zip
+          fi
 
       - name: Publish nexora-latest release
         env:
@@ -103,6 +109,7 @@ jobs:
             preload.js
             renderer.js
             renderer.css
+            themes-defaults.zip
           )
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "${ASSETS[@]}" --clobber

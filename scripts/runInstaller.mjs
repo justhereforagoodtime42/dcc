@@ -97,8 +97,10 @@ try {
         stdio: "inherit",
         env: {
             ...process.env,
+            // Installer needs the repo root to find dist/; Discord must NOT use this as themes/settings.
             VENCORD_USER_DATA_DIR: BASE_DIR,
-            VENCORD_DEV_INSTALL: "1"
+            VENCORD_DEV_INSTALL: "1",
+            NEXORA_USER_DATA_DIR: join(process.env.APPDATA || "", "Nexora")
         }
     });
 } catch {
