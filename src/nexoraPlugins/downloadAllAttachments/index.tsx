@@ -1,6 +1,5 @@
 /*
- * Download All Attachments
- * Copyright (c) 2026 Nexora contributors
+ * Download All Attachments (ported — original author below)
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -9,7 +8,8 @@ import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { Menu, React, showToast } from "@webpack/common";
 
-const Authors = [{ name: "Nexora", id: 0n }] as const;
+/** Do not credit Nexora / acidicreturns — Equicord DownloadAllAttachments author */
+const Authors = [{ name: "dhopcs", id: 206309860038410240n }] as const;
 
 migratePluginSettings("DownloadAllAttachments", "NexoraDownloadAllAttachments");
 

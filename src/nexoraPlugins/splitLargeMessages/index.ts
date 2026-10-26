@@ -1,6 +1,5 @@
 /*
- * Split Large Messages
- * Copyright (c) 2026 Nexora contributors
+ * Split Large Messages (ported — original authors below)
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -8,8 +7,11 @@ import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { MessageActions, showToast, UserStore } from "@webpack/common";
 
-/** Concept from BetterDiscord SplitLargeMessages (DevilBro); Nexora port */
-const Authors = [{ name: "DevilBro", id: 0n }, { name: "Nexora", id: 0n }] as const;
+/** Do not credit Nexora / acidicreturns — Equicord SplitLargeMessages authors */
+const Authors = [
+    { name: "Reycko", id: 1123725368004726794n },
+    { name: "justjxke", id: 852558183087472640n },
+] as const;
 
 migratePluginSettings("SplitLargeMessages", "NexoraSplitLargeMessages");
 

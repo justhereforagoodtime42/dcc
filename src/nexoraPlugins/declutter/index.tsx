@@ -1,6 +1,5 @@
 /*
- * Declutter plugin
- * Copyright (c) 2026 Nexora contributors
+ * Declutter plugin (ported — original authors below)
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -9,7 +8,13 @@ import definePlugin, { OptionType } from "@utils/types";
 
 import managedStyle from "./style.css?managed";
 
-const Authors = [{ name: "Nexora", id: 0n }] as const;
+/** Do not credit Nexora / acidicreturns — Equicord Declutter authors */
+const Authors = [
+    { name: "Leon135", id: 309275452231385088n },
+    { name: "prism", id: 390884143749136386n },
+    { name: "Kyuuhachi", id: 236588665420251137n },
+    { name: "SomeAspy", id: 516750892372852754n },
+] as const;
 
 migratePluginSettings("Declutter", "NexoraDeclutter");
 

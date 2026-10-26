@@ -1,6 +1,5 @@
 /*
- * Auto Jump to Message
- * Copyright (c) 2026 Nexora contributors
+ * Auto Jump to Message (ported — original author below)
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -8,7 +7,7 @@ import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { MessageActions, NavigationRouter, showToast } from "@webpack/common";
 
-const Authors = [{ name: "Nexora", id: 0n }] as const;
+const Authors = [{ name: "k304", id: 255004979637649408n }] as const;
 
 migratePluginSettings("AutoJumpToMessage", "NexoraAutoJumpToMessage");
 

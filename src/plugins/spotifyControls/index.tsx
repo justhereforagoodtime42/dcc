@@ -77,7 +77,6 @@ export default definePlugin({
     name: "SpotifyControls",
     description: "Adds a Spotify player above the account panel, with optional no auto-pause in voice",
     tags: ["Media", "Activity"],
-    // AcidicReturns first — modal only shows ~6 authors
     authors: [AcidicReturns, Devs.Ven, Devs.afn, Devs.KraXen72, Devs.Av32000, Devs.nin0dev, Devs.Cyn, Devs.Nuckyz],
     settings,
     patches: [
