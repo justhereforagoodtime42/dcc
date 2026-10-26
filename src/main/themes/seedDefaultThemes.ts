@@ -15,13 +15,15 @@ import {
 } from "fs";
 import { join } from "path";
 
+import { BUNDLED_THEME_CSS } from "./bundledThemeSources.generated";
+
 /** Bump when shipped theme CSS / wallpapers change so installs refresh. */
-export const NEXORA_DEFAULT_THEMES_VERSION = 9;
+export const NEXORA_DEFAULT_THEMES_VERSION = 10;
 
 const STAMP_NAME = ".nexora-defaults-version";
 const CACHE_DIR_NAME = ".image-cache";
 
-/** Bundled next to patcher.js / vencordDesktopMain.js as dist/themes/defaults */
+/** Optional on-disk copy next to patcher.js (installer / themes-defaults.zip). */
 function defaultsDir() {
     return join(__dirname, "themes", "defaults");
 }
@@ -30,15 +32,31 @@ function isManagedTheme(css: string) {
     return /@nexoraManaged\s+true/i.test(css);
 }
 
+function themeSources(): Record<string, string> {
+    const out: Record<string, string> = { ...BUNDLED_THEME_CSS };
+    const srcRoot = defaultsDir();
+    if (!existsSync(srcRoot)) return out;
+
+    // Disk copy can be newer after themes-defaults.zip apply; prefer it when present
+    for (const name of readdirSync(srcRoot)) {
+        if (!name.endsWith(".css")) continue;
+        try {
+            out[name] = readFileSync(join(srcRoot, name), "utf-8");
+        } catch { /* keep embedded */ }
+    }
+    return out;
+}
+
 /**
  * Copy bundled themes (+ wallpaper cache) into the user themes folder.
- * Missing files are always installed; managed themes refresh when the stamp version bumps.
+ * Theme CSS is embedded in patcher.js so HTTP auto-update always ships new defaults.
  * Themes are left disabled — user enables one in Settings.
  */
 export function seedDefaultThemes() {
-    const srcRoot = defaultsDir();
-    if (!existsSync(srcRoot)) {
-        console.warn("[Nexora] No bundled default themes at", srcRoot);
+    const sources = themeSources();
+    const names = Object.keys(sources);
+    if (!names.length) {
+        console.warn("[Nexora] No bundled default themes embedded or on disk");
         return;
     }
 
@@ -47,13 +65,9 @@ export function seedDefaultThemes() {
     const prev = existsSync(stampPath) ? Number(readFileSync(stampPath, "utf-8").trim()) || 0 : 0;
     const shouldRefreshManaged = prev < NEXORA_DEFAULT_THEMES_VERSION;
 
-    for (const name of readdirSync(srcRoot)) {
-        if (name === CACHE_DIR_NAME) continue;
-        if (!name.endsWith(".css")) continue;
-
-        const from = join(srcRoot, name);
+    for (const name of names) {
+        const bundled = sources[name];
         const to = join(THEMES_DIR, name);
-        const bundled = readFileSync(from, "utf-8");
 
         if (!existsSync(to)) {
             writeFileSync(to, bundled, "utf-8");
@@ -75,7 +89,7 @@ export function seedDefaultThemes() {
     }
 
     // Wallpaper cache used by NewRem (and friends) so first paint works offline
-    const srcCache = join(srcRoot, CACHE_DIR_NAME);
+    const srcCache = join(defaultsDir(), CACHE_DIR_NAME);
     const destCache = join(THEMES_DIR, CACHE_DIR_NAME);
     if (existsSync(srcCache)) {
         mkdirSync(destCache, { recursive: true });

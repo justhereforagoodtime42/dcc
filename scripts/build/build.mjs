@@ -217,6 +217,9 @@ const buildConfigs = ([
     }
 ]);
 
+// Embed default theme CSS into the main process bundle (standalone updates only ship patcher.js)
+await import("./bundleDefaultThemes.mjs");
+
 await buildOrWatchAll(buildConfigs);
 
 // Ship Nexora default themes (+ wallpaper cache) next to the main process bundles
