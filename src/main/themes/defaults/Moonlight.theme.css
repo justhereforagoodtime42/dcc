@@ -1,0 +1,33 @@
+/**
+ * @name moonlight
+ * @author AcidicReturns
+ * @version 1.0.0
+ * @description uh
+ * @nexoraManaged true
+ */
+
+@import url(https://puckzxz.github.io/NotAnotherAnimeTheme/build/v3/naat.v3.css);
+
+:root {
+  --theme-background-image: url(https://files.catbox.moe/jgicqb.webp);
+  --theme-transparency: rgba(0, 0, 0, 0.55);
+  --main-theme-color: rgb(180, 180, 190);
+  --server-listing-width: 72px;
+  --font-size: 100%;
+  --small-user-popout-background-image: var(--theme-background-image);
+  --small-user-popout-background-transparency: rgba(0, 0, 0, 0.6);
+  --big-user-popout-background-image: var(--theme-background-image);
+  --big-user-popout-background-transparency: rgba(0, 0, 0, 0.6);
+  --message-box-transparency: rgba(0, 0, 0, 0.55);
+  --embed-background-transparency: rgba(0, 0, 0, 0.55);
+  --context-menu-transparency: rgba(15, 15, 15, 0.85);
+}
+
+/* Default Discord home (Friends) icon — undo NAAT custom home image */
+[class*="childWrapper_"] svg {
+  display: unset !important;
+}
+[class*="listItemWrapper_"] [class*="childWrapper_"],
+[class*="tutorialContainer_"] [class*="childWrapper_"] {
+  background-image: none !important;
+}

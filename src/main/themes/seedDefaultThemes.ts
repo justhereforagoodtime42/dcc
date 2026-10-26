@@ -16,7 +16,7 @@ import {
 import { join } from "path";
 
 /** Bump when shipped theme CSS / wallpapers change so installs refresh. */
-export const NEXORA_DEFAULT_THEMES_VERSION = 7;
+export const NEXORA_DEFAULT_THEMES_VERSION = 8;
 
 const STAMP_NAME = ".nexora-defaults-version";
 const CACHE_DIR_NAME = ".image-cache";
