@@ -130,6 +130,7 @@ async function runUpdateCheck() {
                     body: "Click here to restart",
                     onClick: relaunch
                 });
+                // test-release probe: no user-facing change — bump only to verify HTTP auto-update
             }
             return;
         }
