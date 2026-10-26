@@ -131,7 +131,7 @@ try {
             "User-Agent" = "NexoraInstaller"
             "Accept"     = "application/vnd.github+json"
         }
-        $id = if ($rel.name -match 'Nexora latest \(([0-9a-f]{7,40})\)') { $Matches[1] } else { "latest" }
+        $id = if ($rel.name -match '([0-9a-f]{7,40})\s*$') { $Matches[1] } else { "latest" }
         $asset = @($rel.assets | Where-Object { $_.name -eq "Nexora-Windows.zip" }) | Select-Object -First 1
         $updated = if ($asset) { [string]$asset.updated_at } else { "" }
         $dist = Join-Path $InstallRoot "dist"
@@ -154,7 +154,7 @@ try {
     Write-Host "Bundled themes land in %AppData%\Nexora\themes on first launch."
     Write-Host "Keep this folder: $InstallRoot (Discord loads Nexora from here)."
     Write-Host ""
-    Write-Host "Later: open Discord to download updates, then fully quit and reopen once more."
+    Write-Host "Later: open Discord — Nexora auto-updates like Vencord (toast → click restart)."
     Write-Host "If updates never appear, re-run this installer (one line below)."
     Write-Host "  irm https://github.com/$Repo/releases/download/$ReleaseTag/Install-Nexora.ps1 | iex"
 }

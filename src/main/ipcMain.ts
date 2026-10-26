@@ -31,7 +31,6 @@ import { join } from "path";
 
 import { registerCspIpcHandlers } from "./csp/manager";
 import { getThemeInfo, stripBOM, UserThemeHeader } from "./themes";
-import { maybeAutoUpdateNexora } from "./nexoraAutoUpdate";
 import { seedDefaultThemes } from "./themes/seedDefaultThemes";
 import { ALLOWED_PROTOCOLS, QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
@@ -42,8 +41,8 @@ const RENDERER_CSS_PATH = join(__dirname, IS_VESKTOP ? "vencordDesktopRenderer.c
 mkdirSync(THEMES_DIR, { recursive: true });
 seedDefaultThemes();
 
-// One-click installs: pull newer builds from GitHub on launch (does not touch user themes)
-maybeAutoUpdateNexora().catch(err => console.error("[Nexora] Auto-update error", err));
+// Updates: standalone builds use Vencord's HTTP updater (src/main/updater/http.ts)
+// against the nexora-latest GitHub Release assets — do not add a parallel zip updater.
 
 registerCspIpcHandlers();
 

@@ -1,4 +1,7 @@
 # Build Nexora and publish a rolling "nexora-latest" GitHub Release for one-click install
+# Standalone builds use Vencord's HTTP updater — release MUST include individual dist
+# assets (patcher.js, preload.js, renderer.js, renderer.css) with the hash as the
+# last token of the release title (same convention as Vencord DevBuild).
 name: Nexora Release
 
 on:
@@ -36,28 +39,26 @@ jobs:
         # --standalone = HTTP updater (no git). Required for one-click installs.
         run: pnpm build --standalone
 
-      - name: Pack Windows zip
+      - name: Pack Windows zip + flat dist assets
         run: |
           set -euo pipefail
           STAGE=nexora-pack
           rm -rf "$STAGE"
           mkdir -p "$STAGE/dist"
           # Runtime bits the Discord loader needs (+ bundled themes)
-          cp -a dist/patcher.js dist/preload.js dist/renderer.js dist/renderer.css "$STAGE/dist/" || true
+          cp -a dist/patcher.js dist/preload.js dist/renderer.js dist/renderer.css "$STAGE/dist/"
           cp -a dist/*.LEGAL.txt "$STAGE/dist/" 2>/dev/null || true
           if [ -d dist/themes ]; then
             cp -a dist/themes "$STAGE/dist/"
           fi
-          # Build id so clients can auto-update without re-running the installer
-          git rev-parse --short HEAD > "$STAGE/dist/.nexora-release-id"
           # One-click installer scripts
-          mkdir -p "$STAGE"
           cp scripts/windows/Install-Nexora.ps1 scripts/windows/Uninstall-Nexora.ps1 scripts/windows/Install-Nexora.bat "$STAGE/"
           cd "$STAGE"
           zip -r ../Nexora-Windows.zip .
           cd ..
           ls -lh Nexora-Windows.zip
-          # Also publish installer scripts alone for irm | iex style install
+          # Flat copies for Vencord HTTP updater (downloads these by name into dist/)
+          cp dist/patcher.js dist/preload.js dist/renderer.js dist/renderer.css .
           cp scripts/windows/Install-Nexora.ps1 scripts/windows/Uninstall-Nexora.ps1 scripts/windows/Install-Nexora.bat .
 
       - name: Publish nexora-latest release
@@ -66,7 +67,8 @@ jobs:
         run: |
           set -euo pipefail
           TAG=nexora-latest
-          TITLE="Nexora latest ($(git rev-parse --short HEAD))"
+          # Hash MUST be the last whitespace-separated token (Vencord http updater)
+          TITLE="Nexora Build $(git rev-parse --short HEAD)"
           NOTES="$(cat <<'EOF'
           ## One-click install (Windows)
 
@@ -75,6 +77,8 @@ jobs:
           3. Quit Discord completely (system tray too).
           4. Double-click **Install-Nexora.bat** and follow the prompts.
           5. Open Discord — Nexora settings + bundled themes should be there.
+
+          Updates use the same HTTP updater as Vencord: open Discord, wait for the update toast, restart.
 
           ### Or PowerShell one-liner
           ```powershell
@@ -90,21 +94,22 @@ jobs:
           After Discord updates, run the installer again (repair).
           EOF
           )"
+          ASSETS=(
+            Nexora-Windows.zip
+            Install-Nexora.ps1
+            Uninstall-Nexora.ps1
+            Install-Nexora.bat
+            patcher.js
+            preload.js
+            renderer.js
+            renderer.css
+          )
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" \
-              Nexora-Windows.zip \
-              Install-Nexora.ps1 \
-              Uninstall-Nexora.ps1 \
-              Install-Nexora.bat \
-              --clobber
-            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
+            gh release upload "$TAG" "${ASSETS[@]}" --clobber
+            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES" --latest
           else
-            gh release create "$TAG" \
-              Nexora-Windows.zip \
-              Install-Nexora.ps1 \
-              Uninstall-Nexora.ps1 \
-              Install-Nexora.bat \
+            gh release create "$TAG" "${ASSETS[@]}" \
               --title "$TITLE" \
               --notes "$NOTES" \
-              --latest=false
+              --latest
           fi

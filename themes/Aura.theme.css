@@ -1,0 +1,69 @@
+/**
+ * @name Aura
+ * @author friendly clash
+ * @description Soft wallpaper theme — Aura
+ * @version 1.0.0
+ * @nexoraManaged true
+ */
+
+.app__160d8,
+#app-mount,
+body,
+[class*="app_"],
+[class*="bg_"],
+[class*="appMount_"],
+.visual-refresh [class*="bg_"] {
+    background-image: url(vencord:///themes/.image-cache/aura-bg.jpg) !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-attachment: fixed !important;
+    background-color: transparent !important;
+    background-repeat: no-repeat !important;
+}
+
+[class*="layers_"],
+[class*="layer_"] {
+    background-color: transparent !important;
+}
+
+/* Punch through Discord chrome so the wallpaper shows in servers / friends */
+.visual-refresh [class*="sidebar_"],
+.visual-refresh [class*="guilds_"],
+.visual-refresh [class*="wrapper_"][class*="guilds"],
+.visual-refresh [class*="guildSeparator_"],
+.visual-refresh [class*="privateChannels_"],
+.visual-refresh [class*="tabBody_"],
+.visual-refresh [class*="nowPlayingColumn_"],
+.visual-refresh [class*="peopleList_"],
+#app-mount [class*="chat_"],
+#app-mount [class*="chatContent_"],
+[class*="members_"],
+[class*="membersWrap_"],
+.theme-dark [class*="container_"][class*="chat"],
+.visual-refresh [class*="messages_"],
+.visual-refresh [class*="messagesWrapper_"],
+.visual-refresh [class*="container_"][class*="themed"],
+.theme-dark .scroller_ef3116,
+.visual-refresh .wrapper_ef3116,
+.visual-refresh .sidebar_c48ade {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+#app-mount [class*="panels_"],
+.visual-refresh [class*="panels_"],
+.visual-refresh [class*="channelTextArea_"] {
+    background-color: rgba(0, 0, 0, 0.35) !important;
+}
+
+.theme-dark, .theme-light, .visual-refresh {
+    --background-primary: transparent !important;
+    --background-secondary: transparent !important;
+    --background-secondary-alt: transparent !important;
+    --background-tertiary: transparent !important;
+    --background-base-lowest: transparent !important;
+    --background-base-lower: transparent !important;
+    --background-base-low: transparent !important;
+    --bg-overlay-chat: transparent !important;
+    --bg-overlay-app-frame: transparent !important;
+}

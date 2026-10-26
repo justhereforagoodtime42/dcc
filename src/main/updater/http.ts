@@ -29,6 +29,8 @@ import gitRemote from "~git-remote";
 import { serializeErrors, VENCORD_FILES } from "./common";
 
 const API_BASE = `https://api.github.com/repos/${gitRemote}`;
+/** Rolling Nexora one-click release (also marked latest). */
+const RELEASE_ENDPOINT = "/releases/latest";
 let PendingUpdates = [] as [string, string][];
 
 async function githubGet<T = any>(endpoint: string) {
@@ -40,6 +42,12 @@ async function githubGet<T = any>(endpoint: string) {
             "User-Agent": VENCORD_USER_AGENT
         }
     });
+}
+
+/** Release titles: "DevBuild abc1234" / "Nexora Build abc1234" / legacy "Nexora latest (abc1234)". */
+function hashFromReleaseName(name: string) {
+    const m = /([0-9a-f]{7,40})\)?\s*$/i.exec(String(name || "").trim());
+    return m?.[1]?.toLowerCase() ?? "";
 }
 
 async function calculateGitChanges() {
@@ -57,17 +65,21 @@ async function calculateGitChanges() {
 }
 
 async function fetchUpdates() {
-    const data = await githubGet("/releases/latest");
+    const data = await githubGet(RELEASE_ENDPOINT);
 
-    const hash = data.name.slice(data.name.lastIndexOf(" ") + 1);
-    if (hash === gitHash)
+    const hash = hashFromReleaseName(data.name);
+    if (hash && (hash === gitHash.toLowerCase() || gitHash.toLowerCase().startsWith(hash) || hash.startsWith(gitHash.toLowerCase())))
         return false;
 
+    PendingUpdates = [];
     data.assets.forEach(({ name, browser_download_url }) => {
-        if (VENCORD_FILES.some(s => name.startsWith(s))) {
+        if (VENCORD_FILES.some(s => name === s || name.startsWith(s))) {
             PendingUpdates.push([name, browser_download_url]);
         }
     });
+
+    // No matching assets ⇒ not a usable update (don't pretend we updated)
+    if (!PendingUpdates.length) return false;
 
     return true;
 }
