@@ -5,11 +5,16 @@
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     border-bottom: 1px solid var(--border-subtle);
+    /* Resize volume slider with the panel width */
+    container-type: inline-size;
+    container-name: vc-spotify-player;
+    overflow: visible;
 
     /* so custom themes can easily change it */
     --vc-spotify-green: var(--spotify, #1db954);
     --vc-spotify-green-90: color-mix(in hsl, var(--vc-spotify-green), transparent 90%);
     --vc-spotify-green-80: color-mix(in hsl, var(--vc-spotify-green), transparent 80%);
+    --vc-spotify-volume-slider-width: 64px;
 }
 
 .vc-spotify-button {
@@ -79,6 +84,9 @@
     margin-top: 14px;
     flex-wrap: wrap;
     gap: 2px;
+    overflow: visible;
+    position: relative;
+    z-index: 2;
 }
 
 .vc-spotify-volume {
@@ -91,7 +99,7 @@
     height: 32px;
     margin: 0 2px;
     flex-shrink: 0;
-    z-index: 2;
+    z-index: 3;
 }
 
 /* Same icon color as shuffle / play / etc. */
@@ -120,15 +128,16 @@
     color: inherit;
 }
 
-/* Float to the right — flush to the icon so there’s no hover gap */
+/* Float beside the icon — direction/width follow panel size via @container */
 .vc-spotify-volume-slider-wrap {
     position: absolute;
     left: 100%;
+    right: auto;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
     align-items: center;
-    /* left padding = hover bridge from icon → slider (no dead gap) */
+    /* padding toward the icon = hover bridge (no dead gap) */
     padding: 4px 6px 4px 8px;
     border-radius: 8px;
     background: var(--background-floating, var(--background-mod-strong, rgba(0, 0, 0, 0.55)));
@@ -136,6 +145,7 @@
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.12s ease, visibility 0.12s ease;
+    z-index: 5;
 }
 
 /* Hover only (not focus-within) so mute/unmute click doesn’t leave the slider open */
@@ -146,10 +156,35 @@
 }
 
 .vc-spotify-volume-slider {
-    width: 64px;
+    width: var(--vc-spotify-volume-slider-width, 64px);
     height: 3px;
     accent-color: var(--interactive-icon-default, #b5bac1);
     cursor: pointer;
+}
+
+/* Narrow panels: shorter slider, open left so it stays in the bar */
+@container vc-spotify-player (max-width: 260px) {
+    .vc-spotify-volume {
+        --vc-spotify-volume-slider-width: 48px;
+    }
+
+    .vc-spotify-volume-slider-wrap {
+        left: auto;
+        right: 100%;
+        padding: 4px 8px 4px 6px;
+    }
+}
+
+@container vc-spotify-player (max-width: 200px) {
+    .vc-spotify-volume {
+        --vc-spotify-volume-slider-width: 36px;
+    }
+}
+
+@container vc-spotify-player (max-width: 160px) {
+    .vc-spotify-volume {
+        --vc-spotify-volume-slider-width: 28px;
+    }
 }
 
 .vc-spotify-queue-item-playable {
